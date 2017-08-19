@@ -1,0 +1,466 @@
+<html>
+<head>
+    <style>
+        .sCourt {
+            background-color:orange;
+            position:relative;
+        }
+        .sField {
+            background-color:blue;
+            position:absolute;
+        }
+        .sLine {
+            background-color:white;
+            position:absolute;
+        }
+        .sNet {
+            background-color:gray;
+            position:absolute;
+        }
+        .sBall {
+            background-color:yellow;
+            -webkit-border-radius:50%;
+            -moz-border-radius:50%;
+            border-radius:50%;
+            position:absolute;
+        }
+        .sBallShadow {
+            background-color:black;
+            -webkit-border-radius:50%;
+            -moz-border-radius:50%;
+            border-radius:50%;
+            position:absolute;
+        }
+        .sPlayer {
+            -webkit-border-radius:50%;
+            -moz-border-radius:50%;
+            border-radius:50%;
+            background-color:black;
+            position:absolute;
+        }
+        .sFlash {
+            background-color:red;
+            -webkit-border-radius:50%;
+            -moz-border-radius:50%;
+            border-radius:50%;
+            position:absolute;
+        }
+    </style>
+</head>
+<body>
+    <div id="mCourt" class="sCourt">
+        <div id="mField" class="sField"></div>
+
+        <div id="mLineLeftOuter" class="sLine"></div>
+        <div id="mLineRightOuter" class="sLine"></div>
+        <div id="mLineLeftInner" class="sLine"></div>
+        <div id="mLineRightInner" class="sLine"></div>
+        <div id="mLineTopOuter" class="sLine"></div>
+        <div id="mLineBottomOuter" class="sLine"></div>
+        <div id="mLineTopInner" class="sLine"></div>
+        <div id="mLineBottomInner" class="sLine"></div>
+        <div id="mLineCentral" class="sLine"></div>
+        <div id="mLineTopMark" class="sLine"></div>
+        <div id="mLineBottomMark" class="sLine"></div>
+        
+        <div id="mNet" class="sNet"></div>
+
+        <div id="mMyPlayer" class="sPlayer"></div>
+        <div id="mHisPlayer" class="sPlayer"></div>
+        
+        <div id="mBallShadow" class="sBallShadow"></div>
+        <div id="mBall" class="sBall"></div>
+        <div id="mFlash" class="sFlash"></div>
+    <div>
+    <input type="button" value="Победить" onclick="onWinButtonClick()">
+    <script>
+        var PAIR_FIELD_WIDTH     = 10.973; //metres
+        var SINGLE_FIELD_WIDTH   = 8.23; 
+        var FIELD_LENGTH         = 11.89;
+        var SERVICE_FIELD_LENGTH = 6.40;
+        var COURT_LENGTH         = (2 * FIELD_LENGTH) + 6;
+        var COURT_WIDTH          = PAIR_FIELD_WIDTH + 6;
+        var NET_WIDTH            = PAIR_FIELD_WIDTH + 2 * 0.914;
+        var LINE_WIDTH           = 0.25;
+        var MARK_LENGTH          = LINE_WIDTH * 2;
+        
+        var BALL_RADIUS          = 1.5 * LINE_WIDTH;
+        var FLASH_RADIUS         = BALL_RADIUS * 0.8;
+        var PLAYER_HEIGHT        = BALL_RADIUS * 2;
+        var PLAYER_WIDTH         = PLAYER_HEIGHT * 2;
+
+        var VIEW_WIDTH = 300; //pixels
+        
+        //типы действий на площадке
+        var SERVICE_ID      = 1; //подача
+        var BOUND_SHOT_ID   = 2; //удачно отбиваем мяч с отскока
+        var BOUND_LOSS_ID   = 4; //не отбиваем мяч с отскока
+        var NET_ID          = 8; //в сетку
+        var OUT_ID          = 16;//в аут
+
+        var animationStartTime;
+        var shotCommand = {};
+        
+        function playerDivFor(player) {
+            player = player % 2;
+            return (player == 0) ? mMyPlayer : mHisPlayer;
+        }
+        
+        function lenToView(len) {
+            return (len * VIEW_WIDTH) / COURT_WIDTH;
+        }
+        
+        function xToViewLeft(x) {
+            return ((x + COURT_WIDTH / 2) * VIEW_WIDTH) / COURT_WIDTH;
+        }
+        
+        function yToViewTop(y) {
+            return ((y + COURT_LENGTH / 2) * VIEW_WIDTH) / COURT_WIDTH;
+        }
+        
+        function drawVerticalLine(lineDiv, x, y1, y2) { //assert: y2>y1
+            var lineWidth = (LINE_WIDTH * VIEW_WIDTH) / COURT_WIDTH;
+        
+            lineDiv.style.width  = lineWidth;
+            lineDiv.style.height = (yToViewTop(y2) - yToViewTop(y1)) + lineWidth;
+            
+            lineDiv.style.top = yToViewTop(y1) - lineWidth/2;
+            lineDiv.style.left = xToViewLeft(x) - lineWidth/2;
+        }
+        
+        function drawHorizontalLine(lineDiv, y, x1, x2) { //assert: x2>x1
+            var lineWidth = (LINE_WIDTH * VIEW_WIDTH) / COURT_WIDTH;
+        
+            lineDiv.style.width  = (xToViewLeft(x2) - xToViewLeft(x1)) + lineWidth;
+            lineDiv.style.height = lineWidth;
+            
+            lineDiv.style.top = yToViewTop(y) - lineWidth/2;
+            lineDiv.style.left = xToViewLeft(x1) - lineWidth/2;
+        }
+        
+        function initBall() {
+            mBall.style.height = 2 * lenToView(BALL_RADIUS);
+            mBall.style.width = 2 * lenToView(BALL_RADIUS);
+            
+            mBallShadow.style.height = 2 * lenToView(BALL_RADIUS);
+            mBallShadow.style.width = 2 * lenToView(BALL_RADIUS);
+            
+            moveBallTo(0,0);
+            moveBallShadowTo(0,0);
+        }
+        
+        function initFlash() {
+            mFlash.style.height = 2 * lenToView(FLASH_RADIUS);
+            mFlash.style.width = 2 * lenToView(FLASH_RADIUS);
+        }
+        
+        function initPlayer(playerDiv) {
+            playerDiv.style.height = lenToView(PLAYER_HEIGHT);
+            playerDiv.style.width = lenToView(PLAYER_WIDTH);
+        }
+        
+        function initPlayers() {
+            initPlayer(mMyPlayer);
+            movePlayerTo(mMyPlayer, 0, FIELD_LENGTH);
+            
+            initPlayer(mHisPlayer);
+            movePlayerTo(mHisPlayer, 0, -FIELD_LENGTH);
+        }
+        
+        function initCourt() {
+            mCourt.style.width  = VIEW_WIDTH;
+            mCourt.style.height = lenToView(COURT_LENGTH);
+            
+            mField.style.width = lenToView(PAIR_FIELD_WIDTH);
+            mField.style.height = lenToView(2 * FIELD_LENGTH);
+            
+            mField.style.top = yToViewTop(-FIELD_LENGTH);
+            mField.style.left = xToViewLeft(-PAIR_FIELD_WIDTH/2);
+            
+            drawVerticalLine(mLineLeftOuter, -PAIR_FIELD_WIDTH/2, -FIELD_LENGTH, FIELD_LENGTH);
+            drawVerticalLine(mLineRightOuter, PAIR_FIELD_WIDTH/2, -FIELD_LENGTH, FIELD_LENGTH);
+
+            drawVerticalLine(mLineLeftInner, -SINGLE_FIELD_WIDTH/2, -FIELD_LENGTH, FIELD_LENGTH);
+            drawVerticalLine(mLineRightInner, SINGLE_FIELD_WIDTH/2, -FIELD_LENGTH, FIELD_LENGTH);
+
+            drawVerticalLine(mLineCentral, 0, -SERVICE_FIELD_LENGTH, SERVICE_FIELD_LENGTH);
+
+            drawVerticalLine(mLineTopMark, 0, -FIELD_LENGTH, -FIELD_LENGTH + MARK_LENGTH);
+            drawVerticalLine(mLineBottomMark, 0, FIELD_LENGTH - MARK_LENGTH, FIELD_LENGTH);
+            
+            drawHorizontalLine(mLineTopOuter, -FIELD_LENGTH, -PAIR_FIELD_WIDTH/2, PAIR_FIELD_WIDTH/2);
+            drawHorizontalLine(mLineBottomOuter,  FIELD_LENGTH, -PAIR_FIELD_WIDTH/2, PAIR_FIELD_WIDTH/2);
+
+            drawHorizontalLine(mLineTopInner, -SERVICE_FIELD_LENGTH, -SINGLE_FIELD_WIDTH/2, SINGLE_FIELD_WIDTH/2);
+            drawHorizontalLine(mLineBottomInner, SERVICE_FIELD_LENGTH, -SINGLE_FIELD_WIDTH/2, SINGLE_FIELD_WIDTH/2);
+
+            drawHorizontalLine(mNet, 0, -NET_WIDTH/2, NET_WIDTH/2);
+            
+            initBall();
+            initFlash();
+            initPlayers();
+        } 
+        
+        function movePlayerTo(playerDiv, x, y) {
+            playerDiv.style.left = xToViewLeft(x) - lenToView(PLAYER_WIDTH/2);
+            playerDiv.style.top  = yToViewTop(y) - lenToView(PLAYER_HEIGHT/2);
+        }
+        
+        function moveBallTo(x, y) {
+            mBall.style.left = xToViewLeft(x) - lenToView(BALL_RADIUS);
+            mBall.style.top  = yToViewTop(y) - lenToView(BALL_RADIUS);
+        }
+        
+        function moveBallShadowTo(x, y) {
+            mBallShadow.style.left = xToViewLeft(x) - lenToView(BALL_RADIUS);
+            mBallShadow.style.top  = yToViewTop(y) - lenToView(BALL_RADIUS);
+        }
+
+        function setFlashVisible(isVisible) {
+            if (isVisible) {
+                mFlash.style.display = 'block';
+            } else {
+                mFlash.style.display = 'none';
+            }
+        }
+        
+        function moveFlashTo(x, y) {
+            mFlash.style.left = xToViewLeft(x) - lenToView(FLASH_RADIUS);
+            mFlash.style.top  = yToViewTop(y) - lenToView(FLASH_RADIUS);
+            setFlashVisible(true);
+        }
+        
+        function CCourtAction(actionType, duration, returnerId, returnerPoint, 
+                              startBallPoint, boundBallPoint, afterBoundPart) {
+            this.actionType = actionType;
+            this.duration = duration;
+            this.returnerId = returnerId;
+            this.returnerPoint = returnerPoint;
+            this.shotPoint = startBallPoint;
+            this.boundPoint = boundBallPoint;
+            this.afterBoundPart = afterBoundPart;
+        }
+        
+        function makeService(duration, returnerId, shotPoint) {
+            return new CCourtAction(SERVICE_ID, duration, returnerId, 
+                                    shotPoint, shotPoint, 
+                                    0);
+        }
+        
+        function makeBoundShot(duration, returnerId, returnerPoint, shotPoint, boundPoint) {
+            var x1,y1,x2,y2;
+            
+            x1 = shotPoint.x;
+            y1 = shotPoint.y;
+            
+            x2 = boundPoint.x;
+            y2 = boundPoint.y;
+            
+            var t,x3,y3;
+            
+            t = 2 - 0.3;
+            y3 = bezier2(t, y1, y2);
+            x3 = bezier2(t,x1,x2);
+            
+            if ((y3 < -(COURT_LENGTH/2)) || ((COURT_LENGTH/2) < y3)) {
+                t = 1 + 0.3;
+                y3 = bezier2(t, y1, y2);
+                if (y3 < -(COURT_LENGTH/2)) {
+                    y3 = -(COURT_LENGTH/2);
+                } else if (y3 > (COURT_LENGTH/2)) {
+                    y3 = (COURT_LENGTH/2);
+                }
+                t = (y3-y1)/(y2-y1);
+                x3 = bezier2(t,x1,x2);
+            }
+            
+            if (x3 < -(COURT_WIDTH/2)) {
+                x3 = -(COURT_WIDTH/2);
+                t = (x3-x1)/(x2-x1);
+            } else if (x3 > (COURT_WIDTH/2)) {
+                x3 = (COURT_WIDTH/2);
+                t = (x3-x1)/(x2-x1);
+            }
+
+            return new CCourtAction(BOUND_SHOT_ID, duration, returnerId, returnerPoint,
+                                    shotPoint, boundPoint, 
+                                    t-1);
+        }
+
+        function makeBoundLossShot(duration, returnerId, returnerPoint, shotPoint, boundPoint) {
+            var x1,y1,x2,y2;
+            
+            x1 = shotPoint.x;
+            y1 = shotPoint.y;
+            
+            x2 = boundPoint.x;
+            y2 = boundPoint.y;
+            
+            var t, x3,y3;
+
+            if (y1 < y2) {
+                y3 = (COURT_LENGTH/2);
+            } else {
+                y3 = -(COURT_LENGTH/2);
+            }
+            
+            t = (y3-y1)/(y2-y1);
+            x3 = bezier2(t, x1, x2);
+            
+            if (x3 < -(COURT_WIDTH/2)) {
+                x3 = -(COURT_WIDTH/2);
+                t = (x3-x1)/(x2-x1);
+            } else if (x3 > (COURT_WIDTH/2)) {
+                x3 = (COURT_WIDTH/2);
+                t = (x3-x1)/(x2-x1);
+            }
+
+            return new CCourtAction(BOUND_LOSS_ID, duration, returnerId, returnerPoint, 
+                                    shotPoint, boundPoint, 
+                                    t-1);
+        }
+        
+        function makeNetShot(duration, returnerId, returnerPoint, shotPoint, boundPoint) {
+            return new CCourtAction(NET_ID, duration, returnerId, returnerPoint, 
+                                    shotPoint, boundPoint, 
+                                    0);
+        }
+        
+        function makeOutShot(duration, returnerId, returnerPoint, shotPoint, boundPoint) {
+            return new CCourtAction(OUT_ID, duration, returnerId, returnerPoint, 
+                                    shotPoint, boundPoint, 
+                                    0);
+        }
+        
+        function bezier2(t, a, b) {
+            return (1-t)*a + t*b;
+        }
+        
+        function bezier3(t, a, b, c) {
+            return t*t*a + (1-t)*t*b + (1-t)*(1-t)*c;
+        }
+        
+        function getBezierThirdPoint(p1, p2) {
+            var k = 0.7;
+            if (p1.x >= p2.x)
+                k = -k;
+            
+            var p = {};
+            p.x =  k*(p2.y - p1.y) + (p2.x - p1.x)/2 + p1.x;
+            p.y = -k*(p2.x - p1.x) + (p2.y - p1.y)/2 + p1.y;
+            return p;
+        }
+        
+        function animateBoundShot(time) {
+            var timePassed = time - animationStartTime;
+            var cmd = shotCommand;
+
+            if (timePassed > cmd.duration) timePassed = cmd.duration;
+
+            var boundDuration = cmd.duration / (1 + cmd.afterBoundPart);
+            
+            if (timePassed <= boundDuration) {  //draw ball before bound part (parabolic curve)
+                var thirdPoint = getBezierThirdPoint(cmd.shotPoint, cmd.boundPoint);
+                
+                var t = (boundDuration - timePassed) / boundDuration;
+                setFlashVisible(false);
+                moveBallTo(
+                    bezier3(t, cmd.shotPoint.x, thirdPoint.x, cmd.boundPoint.x),
+                    bezier3(t, cmd.shotPoint.y, thirdPoint.y, cmd.boundPoint.y));
+            } else {                            //draw ball after bound 
+                var t = 1 + (timePassed - boundDuration) / boundDuration;
+                moveFlashTo(cmd.boundPoint.x, cmd.boundPoint.y);
+                moveBallTo(
+                    bezier2(t, cmd.shotPoint.x, cmd.boundPoint.x),
+                    bezier2(t, cmd.shotPoint.y, cmd.boundPoint.y));
+            }
+                
+            var t = timePassed/cmd.duration;
+            
+            moveBallShadowTo(
+                bezier2(t, cmd.shotPoint.x, 
+                    bezier2(1 + cmd.afterBoundPart, cmd.shotPoint.x, cmd.boundPoint.x)),
+                bezier2(t, cmd.shotPoint.y, 
+                    bezier2(1 + cmd.afterBoundPart, cmd.shotPoint.y, cmd.boundPoint.y)));
+                    
+            movePlayerTo(playerDivFor(cmd.returnerId),
+                bezier2(t*t, cmd.returnerPoint.x, 
+                    bezier2(1 + cmd.afterBoundPart, cmd.shotPoint.x, cmd.boundPoint.x)),
+                bezier2(t*t, cmd.returnerPoint.y, 
+                    bezier2(1 + cmd.afterBoundPart, cmd.shotPoint.y, cmd.boundPoint.y)));
+
+            if (timePassed < cmd.duration) {
+                requestAnimationFrame(animateBoundShot);
+            }
+        }
+        
+        function animateBoundLossShot(time) {
+            var timePassed = time - animationStartTime;
+            var cmd = shotCommand;
+
+            if (timePassed > cmd.duration) timePassed = cmd.duration;
+
+            var boundDuration = cmd.duration / (1 + cmd.afterBoundPart);
+            
+            if (timePassed <= boundDuration) {  //draw ball before bound part (parabolic curve)
+                var thirdPoint = getBezierThirdPoint(cmd.shotPoint, cmd.boundPoint);
+                
+                var t = (boundDuration - timePassed) / boundDuration;
+                setFlashVisible(false);
+                moveBallTo(
+                    bezier3(t, cmd.shotPoint.x, thirdPoint.x, cmd.boundPoint.x),
+                    bezier3(t, cmd.shotPoint.y, thirdPoint.y, cmd.boundPoint.y));
+            } else {                            //draw ball after bound 
+                var t = 1 + (timePassed - boundDuration) / boundDuration;
+                moveFlashTo(
+                    bezier2(Math.floor(t), cmd.shotPoint.x, cmd.boundPoint.x),
+                    bezier2(Math.floor(t), cmd.shotPoint.y, cmd.boundPoint.y));
+                    
+                moveBallTo(
+                    bezier2(t, cmd.shotPoint.x, cmd.boundPoint.x),
+                    bezier2(t, cmd.shotPoint.y, cmd.boundPoint.y));
+            }
+                
+            var t = timePassed/cmd.duration;
+            
+            moveBallShadowTo(
+                bezier2(t, cmd.shotPoint.x, 
+                    bezier2(1 + cmd.afterBoundPart, cmd.shotPoint.x, cmd.boundPoint.x)),
+                bezier2(t, cmd.shotPoint.y, 
+                    bezier2(1 + cmd.afterBoundPart, cmd.shotPoint.y, cmd.boundPoint.y)));
+                    
+            movePlayerTo(playerDivFor(cmd.returnerId),
+                bezier2(t*t, cmd.returnerPoint.x, 
+                    bezier2(1 + cmd.afterBoundPart/2, cmd.shotPoint.x, cmd.boundPoint.x)),
+                bezier2(t*t, cmd.returnerPoint.y, 
+                    bezier2(1 + cmd.afterBoundPart/2, cmd.shotPoint.y, cmd.boundPoint.y)));
+
+            if (timePassed < cmd.duration) {
+                requestAnimationFrame(animateBoundLossShot);
+            }
+        }
+        
+        function onWinButtonClick() {
+            var startPoint = {};
+            var boundPoint = {};
+            var returnerPoint = {};
+            
+            startPoint.x = -(SINGLE_FIELD_WIDTH/4);
+            startPoint.y = (FIELD_LENGTH);
+
+            boundPoint.x = (SINGLE_FIELD_WIDTH/4);
+            boundPoint.y = -(FIELD_LENGTH/3);
+            
+            returnerPoint.x = 0;
+            returnerPoint.y = -(FIELD_LENGTH);
+            
+            shotCommand = makeBoundLossShot(1000, 1, returnerPoint, startPoint, boundPoint);
+            animationStartTime = performance.now();
+            
+            requestAnimationFrame(animateBoundLossShot);
+        }
+        
+        initCourt();
+    </script>
+</body>
+</html>
