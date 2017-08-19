@@ -1,5 +1,6 @@
 <html>
 <head>
+    <meta charset="utf-8">
     <style>
         .sCourt {
             background-color:orange;
@@ -26,16 +27,16 @@
         }
         .sBallShadow {
             background-color:black;
-            -webkit-border-radius:50%;
-            -moz-border-radius:50%;
-            border-radius:50%;
+            -webkit-border-radius:50%/50%;
+            -moz-border-radius:50%/50%;
+            border-radius:50%/50%;
             position:absolute;
         }
         .sPlayer {
+            background-color:black;
             -webkit-border-radius:50%;
             -moz-border-radius:50%;
             border-radius:50%;
-            background-color:black;
             position:absolute;
         }
         .sFlash {
@@ -260,7 +261,7 @@
             
             t = 2 - 0.3;
             y3 = bezier2(t, y1, y2);
-            x3 = bezier2(t,x1,x2);
+            x3 = bezier2(t, x1, x2);
             
             if ((y3 < -(COURT_LENGTH/2)) || ((COURT_LENGTH/2) < y3)) {
                 t = 1 + 0.3;
@@ -323,13 +324,13 @@
         function makeNetShot(duration, returnerId, returnerPoint, shotPoint, boundPoint) {
             return new CCourtAction(NET_ID, duration, returnerId, returnerPoint, 
                                     shotPoint, boundPoint, 
-                                    0);
+                                    0.5);
         }
         
         function makeOutShot(duration, returnerId, returnerPoint, shotPoint, boundPoint) {
-            return new CCourtAction(OUT_ID, duration, returnerId, returnerPoint, 
-                                    shotPoint, boundPoint, 
-                                    0);
+            var outShot = makeBoundLossShot(duration, returnerId, returnerPoint, shotPoint, boundPoint);
+            outShot.actionType = OUT_ID;
+            return outShot;
         }
         
         function bezier2(t, a, b) {
@@ -337,11 +338,11 @@
         }
         
         function bezier3(t, a, b, c) {
-            return t*t*a + (1-t)*t*b + (1-t)*(1-t)*c;
+            return t*t*a + 2*(1-t)*t*b + (1-t)*(1-t)*c;
         }
         
         function getBezierThirdPoint(p1, p2) {
-            var k = 0.7;
+            var k = 0.5;
             if (p1.x >= p2.x)
                 k = -k;
             
@@ -355,6 +356,7 @@
             var timePassed = time - animationStartTime;
             var cmd = shotCommand;
 
+            if (timePassed < 0) timePassed = 0;
             if (timePassed > cmd.duration) timePassed = cmd.duration;
 
             var boundDuration = cmd.duration / (1 + cmd.afterBoundPart);
@@ -398,31 +400,34 @@
             var timePassed = time - animationStartTime;
             var cmd = shotCommand;
 
+            if (timePassed < 0) timePassed = 0;
             if (timePassed > cmd.duration) timePassed = cmd.duration;
 
-            var boundDuration = cmd.duration / (1 + cmd.afterBoundPart);
+            var t = timePassed*(1 + cmd.afterBoundPart)/cmd.duration;
+            var tFloor = Math.floor(t);
             
-            if (timePassed <= boundDuration) {  //draw ball before bound part (parabolic curve)
-                var thirdPoint = getBezierThirdPoint(cmd.shotPoint, cmd.boundPoint);
-                
-                var t = (boundDuration - timePassed) / boundDuration;
-                setFlashVisible(false);
-                moveBallTo(
-                    bezier3(t, cmd.shotPoint.x, thirdPoint.x, cmd.boundPoint.x),
-                    bezier3(t, cmd.shotPoint.y, thirdPoint.y, cmd.boundPoint.y));
-            } else {                            //draw ball after bound 
-                var t = 1 + (timePassed - boundDuration) / boundDuration;
+            var boundPoint1 = {};
+            var boundPoint2 = {};
+            
+            boundPoint1.x = bezier2(tFloor, cmd.shotPoint.x, cmd.boundPoint.x);
+            boundPoint1.y = bezier2(tFloor, cmd.shotPoint.y, cmd.boundPoint.y);
+
+            boundPoint2.x = bezier2(tFloor + 1, cmd.shotPoint.x, cmd.boundPoint.x);
+            boundPoint2.y = bezier2(tFloor + 1, cmd.shotPoint.y, cmd.boundPoint.y);
+            
+            var thirdPoint = getBezierThirdPoint(boundPoint1, boundPoint2);
+            moveBallTo(
+                bezier3(t-tFloor, boundPoint2.x, thirdPoint.x, boundPoint1.x),
+                bezier3(t-tFloor, boundPoint2.y, thirdPoint.y, boundPoint1.y));
+            
+            setFlashVisible(false);
+            if (tFloor > 0) {
                 moveFlashTo(
-                    bezier2(Math.floor(t), cmd.shotPoint.x, cmd.boundPoint.x),
-                    bezier2(Math.floor(t), cmd.shotPoint.y, cmd.boundPoint.y));
-                    
-                moveBallTo(
-                    bezier2(t, cmd.shotPoint.x, cmd.boundPoint.x),
-                    bezier2(t, cmd.shotPoint.y, cmd.boundPoint.y));
+                    bezier2(tFloor, cmd.shotPoint.x, cmd.boundPoint.x),
+                    bezier2(tFloor, cmd.shotPoint.y, cmd.boundPoint.y));
             }
-                
-            var t = timePassed/cmd.duration;
             
+            t = timePassed/cmd.duration;
             moveBallShadowTo(
                 bezier2(t, cmd.shotPoint.x, 
                     bezier2(1 + cmd.afterBoundPart, cmd.shotPoint.x, cmd.boundPoint.x)),
@@ -440,24 +445,110 @@
             }
         }
         
+        function animateNetShot(time) {
+            var timePassed = time - animationStartTime;
+            var cmd = shotCommand;
+
+            if (timePassed < 0) timePassed = 0;
+            if (timePassed > cmd.duration) timePassed = cmd.duration;
+            
+            var boundDuration = cmd.duration / (1 + cmd.afterBoundPart);
+            
+            if (timePassed <= boundDuration) {  //draw ball before bound part (parabolic curve)
+                var t = timePassed / boundDuration;
+                setFlashVisible(false);
+                var x = bezier2(t, cmd.shotPoint.x, cmd.boundPoint.x);
+                var y = bezier2(t, cmd.shotPoint.y, cmd.boundPoint.y);
+                moveBallTo(x, y);
+                moveBallShadowTo(x,y);
+            } else {                            //draw ball after bound 
+                var t = (timePassed - boundDuration)/(boundDuration * cmd.afterBoundPart);
+                
+                moveFlashTo(cmd.boundPoint.x, cmd.boundPoint.y);
+                var x = bezier2(t, cmd.boundPoint.x, cmd.boundPoint.x-BALL_RADIUS*2);
+                
+                moveBallTo(x, cmd.boundPoint.y);
+                moveBallShadowTo(x, cmd.boundPoint.y);
+            }
+            
+            var t = timePassed/(2 * cmd.duration);
+            
+            movePlayerTo(playerDivFor(cmd.returnerId),
+                bezier2(t*t, cmd.returnerPoint.x, cmd.boundPoint.x),
+                bezier2(t*t, cmd.returnerPoint.y, cmd.boundPoint.y));
+
+            if (timePassed < cmd.duration) {
+                requestAnimationFrame(animateNetShot);
+            }
+        }
+
+        function animateOutShot(time) {
+            var timePassed = time - animationStartTime;
+            var cmd = shotCommand;
+
+            if (timePassed < 0) timePassed = 0;
+            if (timePassed > cmd.duration) timePassed = cmd.duration;
+
+            var t = timePassed*(1 + cmd.afterBoundPart)/cmd.duration;
+            var tFloor = Math.floor(t);
+            
+            var boundPoint1 = {};
+            var boundPoint2 = {};
+            
+            boundPoint1.x = bezier2(tFloor, cmd.shotPoint.x, cmd.boundPoint.x);
+            boundPoint1.y = bezier2(tFloor, cmd.shotPoint.y, cmd.boundPoint.y);
+
+            boundPoint2.x = bezier2(tFloor + 1, cmd.shotPoint.x, cmd.boundPoint.x);
+            boundPoint2.y = bezier2(tFloor + 1, cmd.shotPoint.y, cmd.boundPoint.y);
+            
+            var thirdPoint = getBezierThirdPoint(boundPoint1, boundPoint2);
+            moveBallTo(
+                bezier3(t-tFloor, boundPoint2.x, thirdPoint.x, boundPoint1.x),
+                bezier3(t-tFloor, boundPoint2.y, thirdPoint.y, boundPoint1.y));
+            
+            setFlashVisible(false);
+            if (tFloor > 0) {
+                moveFlashTo(
+                    bezier2(tFloor, cmd.shotPoint.x, cmd.boundPoint.x),
+                    bezier2(tFloor, cmd.shotPoint.y, cmd.boundPoint.y));
+            }
+            
+            t = timePassed/cmd.duration;
+            moveBallShadowTo(
+                bezier2(t, cmd.shotPoint.x, 
+                    bezier2(1 + cmd.afterBoundPart, cmd.shotPoint.x, cmd.boundPoint.x)),
+                bezier2(t, cmd.shotPoint.y, 
+                    bezier2(1 + cmd.afterBoundPart, cmd.shotPoint.y, cmd.boundPoint.y)));
+                    
+            movePlayerTo(playerDivFor(cmd.returnerId),
+                bezier2(t*t/2, cmd.returnerPoint.x, 
+                    bezier2(1 + cmd.afterBoundPart/2, cmd.shotPoint.x, cmd.boundPoint.x)),
+                bezier2(t*t/2, cmd.returnerPoint.y, 
+                    bezier2(1 + cmd.afterBoundPart/2, cmd.shotPoint.y, cmd.boundPoint.y)));
+
+            if (timePassed < cmd.duration) {
+                requestAnimationFrame(animateOutShot);
+            }
+        }
+        
         function onWinButtonClick() {
             var startPoint = {};
             var boundPoint = {};
             var returnerPoint = {};
             
-            startPoint.x = -(SINGLE_FIELD_WIDTH/4);
-            startPoint.y = (FIELD_LENGTH);
+            startPoint.x = (SINGLE_FIELD_WIDTH/2);
+            startPoint.y = -FIELD_LENGTH;
 
-            boundPoint.x = (SINGLE_FIELD_WIDTH/4);
-            boundPoint.y = -(FIELD_LENGTH/3);
+            boundPoint.x = -(SINGLE_FIELD_WIDTH/2 + (PAIR_FIELD_WIDTH - SINGLE_FIELD_WIDTH)/4);
+            boundPoint.y = FIELD_LENGTH/2;
             
             returnerPoint.x = 0;
-            returnerPoint.y = -(FIELD_LENGTH);
+            returnerPoint.y = (FIELD_LENGTH);
             
-            shotCommand = makeBoundLossShot(1000, 1, returnerPoint, startPoint, boundPoint);
+            shotCommand = makeOutShot(1500, 0, returnerPoint, startPoint, boundPoint);
             animationStartTime = performance.now();
             
-            requestAnimationFrame(animateBoundLossShot);
+            requestAnimationFrame(animateOutShot);
         }
         
         initCourt();
