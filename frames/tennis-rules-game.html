@@ -32,12 +32,19 @@
             border-radius:50%/50%;
             position:absolute;
         }
-        .sPlayer {
-            background-color:black;
+        .sMyPlayer {
             -webkit-border-radius:50%;
             -moz-border-radius:50%;
             border-radius:50%;
             position:absolute;
+            background-color:green;
+        }
+        .sHisPlayer {
+            -webkit-border-radius:50%;
+            -moz-border-radius:50%;
+            border-radius:50%;
+            position:absolute;
+            background-color:gray;
         }
         .sFlash {
             background-color:red;
@@ -66,8 +73,8 @@
         
         <div id="mNet" class="sNet"></div>
 
-        <div id="mMyPlayer" class="sPlayer"></div>
-        <div id="mHisPlayer" class="sPlayer"></div>
+        <div id="mMyPlayer" class="sMyPlayer"></div>
+        <div id="mHisPlayer" class="sHisPlayer"></div>
         
         <div id="mBallShadow" class="sBallShadow"></div>
         <div id="mBall" class="sBall"></div>
@@ -93,14 +100,30 @@
         var VIEW_WIDTH = 300; //pixels
         
         //типы действий на площадке
-        var SERVICE_ID      = 1; //подача
-        var BOUND_SHOT_ID   = 2; //удачно отбиваем мяч с отскока
-        var BOUND_LOSS_ID   = 4; //не отбиваем мяч с отскока
-        var NET_ID          = 8; //в сетку
-        var OUT_ID          = 16;//в аут
+        var SERVICE_ID    = 1;  //подача
+        var BOUND_SHOT_ID = 2;  //удачно отбиваем мяч с отскока
+        var BOUND_LOSS_ID = 4;  //не отбиваем мяч с отскока
+        var NET_ID        = 8;  //в сетку
+        var OUT_ID        = 16; //в аут
+        var PAUSE_ID      = 32; //пауза
 
+        //miliseconds
+        var SERVICE_DURATION = 1500;
+        var NET_DURATION     = 1000;
+        var OUT_DURATION     = 1700;
+        var IN_DURATION      = 1200;
+        var PAUSE_DURATION   = 1000;
+        
+        var GAME_OUT_POINTS;
+        var GAME_IN_POINTS;
+        var SERVICE_FROM_POINTS;
+        var SERVICE_IN_POINTS;
+        var SERVICE_OUT_POINTS;
+        var NET_POINTS;
+        
+        //globals
         var animationStartTime;
-        var shotCommand = {};
+        var pointAnimationFrames;
         
         function playerDivFor(player) {
             player = player % 2;
@@ -168,6 +191,147 @@
             movePlayerTo(mHisPlayer, 0, -FIELD_LENGTH);
         }
         
+        function initGameOutPoints() {
+            GAME_OUT_POINTS = [];
+
+            GAME_OUT_POINTS[0] = {};
+            GAME_OUT_POINTS[0].x = (SINGLE_FIELD_WIDTH + PAIR_FIELD_WIDTH)/4;
+            GAME_OUT_POINTS[0].y = SERVICE_FIELD_LENGTH/2;
+
+            GAME_OUT_POINTS[1] = {};
+            GAME_OUT_POINTS[1].x = (SINGLE_FIELD_WIDTH + PAIR_FIELD_WIDTH)/4;
+            GAME_OUT_POINTS[1].y = (SERVICE_FIELD_LENGTH + FIELD_LENGTH)/2;
+
+            GAME_OUT_POINTS[2] = {};
+            GAME_OUT_POINTS[2].x = (PAIR_FIELD_WIDTH + COURT_WIDTH)/4;
+            GAME_OUT_POINTS[2].y = SERVICE_FIELD_LENGTH/2;
+
+            GAME_OUT_POINTS[3] = {};
+            GAME_OUT_POINTS[3].x = (PAIR_FIELD_WIDTH + COURT_WIDTH)/4;
+            GAME_OUT_POINTS[3].y = (SERVICE_FIELD_LENGTH + FIELD_LENGTH)/2;
+
+            GAME_OUT_POINTS[4] = {};
+            GAME_OUT_POINTS[4].x = SINGLE_FIELD_WIDTH/12;
+            GAME_OUT_POINTS[4].y = (2*FIELD_LENGTH + COURT_LENGTH)/4;
+
+            GAME_OUT_POINTS[5] = {};
+            GAME_OUT_POINTS[5].x = SINGLE_FIELD_WIDTH/4;
+            GAME_OUT_POINTS[5].y = (2*FIELD_LENGTH + COURT_LENGTH)/4;
+
+            GAME_OUT_POINTS[6] = {};
+            GAME_OUT_POINTS[6].x = SINGLE_FIELD_WIDTH*5/12;
+            GAME_OUT_POINTS[6].y = (2*FIELD_LENGTH + COURT_LENGTH)/4;
+        }
+        
+        function initGameInPoints() {
+            GAME_IN_POINTS = [];
+            
+            GAME_IN_POINTS[0] = {};
+            GAME_IN_POINTS[0].x = SINGLE_FIELD_WIDTH/12;
+            GAME_IN_POINTS[0].y = (SERVICE_FIELD_LENGTH + FIELD_LENGTH)/2;
+
+            GAME_IN_POINTS[1] = {};
+            GAME_IN_POINTS[1].x = SINGLE_FIELD_WIDTH/4;
+            GAME_IN_POINTS[1].y = (SERVICE_FIELD_LENGTH + FIELD_LENGTH)/2;
+
+            GAME_IN_POINTS[2] = {};
+            GAME_IN_POINTS[2].x = SINGLE_FIELD_WIDTH*5/12;
+            GAME_IN_POINTS[2].y = (SERVICE_FIELD_LENGTH + FIELD_LENGTH)/2;
+            
+            GAME_IN_POINTS[3] = {};
+            GAME_IN_POINTS[3].x = SINGLE_FIELD_WIDTH/12;
+            GAME_IN_POINTS[3].y = SERVICE_FIELD_LENGTH/2;
+
+            GAME_IN_POINTS[4] = {};
+            GAME_IN_POINTS[4].x = SINGLE_FIELD_WIDTH/4;
+            GAME_IN_POINTS[4].y = SERVICE_FIELD_LENGTH/2;
+
+            GAME_IN_POINTS[5] = {};
+            GAME_IN_POINTS[5].x = SINGLE_FIELD_WIDTH*5/12;
+            GAME_IN_POINTS[5].y = SERVICE_FIELD_LENGTH/2;
+        }
+        
+        function initServiceFromPoints() {
+            SERVICE_FROM_POINTS = [];
+            
+            SERVICE_FROM_POINTS[0] = {};
+            SERVICE_FROM_POINTS[0].x = SINGLE_FIELD_WIDTH/12;
+            SERVICE_FROM_POINTS[0].y = FIELD_LENGTH + PLAYER_HEIGHT;
+            
+            SERVICE_FROM_POINTS[1] = {};
+            SERVICE_FROM_POINTS[1].x = SINGLE_FIELD_WIDTH/4;
+            SERVICE_FROM_POINTS[1].y = FIELD_LENGTH + PLAYER_HEIGHT;
+
+            SERVICE_FROM_POINTS[2] = {};
+            SERVICE_FROM_POINTS[2].x = SINGLE_FIELD_WIDTH*5/12;
+            SERVICE_FROM_POINTS[2].y = FIELD_LENGTH + PLAYER_HEIGHT;
+        }
+        
+        function initServiceOutPoints() {
+            SERVICE_OUT_POINTS = [];
+            
+            SERVICE_OUT_POINTS[0] = {};
+            SERVICE_OUT_POINTS[0].x = SINGLE_FIELD_WIDTH/12;
+            SERVICE_OUT_POINTS[0].y = (SERVICE_FIELD_LENGTH + FIELD_LENGTH)/2;
+
+            SERVICE_OUT_POINTS[1] = {};
+            SERVICE_OUT_POINTS[1].x = SINGLE_FIELD_WIDTH/4;
+            SERVICE_OUT_POINTS[1].y = (SERVICE_FIELD_LENGTH + FIELD_LENGTH)/2;
+
+            SERVICE_OUT_POINTS[2] = {};
+            SERVICE_OUT_POINTS[2].x = SINGLE_FIELD_WIDTH*5/12;
+            SERVICE_OUT_POINTS[2].y = (SERVICE_FIELD_LENGTH + FIELD_LENGTH)/2;
+
+            SERVICE_OUT_POINTS[3] = {};
+            SERVICE_OUT_POINTS[3].x = (SINGLE_FIELD_WIDTH + PAIR_FIELD_WIDTH)/4;
+            SERVICE_OUT_POINTS[3].y = SERVICE_FIELD_LENGTH/2;
+
+            SERVICE_OUT_POINTS[4] = {};
+            SERVICE_OUT_POINTS[4].x = (SINGLE_FIELD_WIDTH + PAIR_FIELD_WIDTH)/4;
+            SERVICE_OUT_POINTS[4].y = (SERVICE_FIELD_LENGTH + FIELD_LENGTH)/2;
+        }
+        
+        function initNetPoints() {
+            NET_POINTS = [];
+            
+            NET_POINTS[0] = {};
+            NET_POINTS[0].x = SINGLE_FIELD_WIDTH/12;
+            NET_POINTS[0].y = BALL_RADIUS;
+
+            NET_POINTS[1] = {};
+            NET_POINTS[1].x = SINGLE_FIELD_WIDTH/4;
+            NET_POINTS[1].y = BALL_RADIUS;
+
+            NET_POINTS[2] = {};
+            NET_POINTS[2].x = SINGLE_FIELD_WIDTH*5/12;
+            NET_POINTS[2].y = BALL_RADIUS;
+        }
+
+        function initServiceInPoints() {
+            SERVICE_IN_POINTS = [];
+            
+            SERVICE_IN_POINTS[0] = {};
+            SERVICE_IN_POINTS[0].x = SINGLE_FIELD_WIDTH/12;
+            SERVICE_IN_POINTS[0].y = SERVICE_FIELD_LENGTH - 2*BALL_RADIUS;
+
+            SERVICE_IN_POINTS[1] = {};
+            SERVICE_IN_POINTS[1].x = SINGLE_FIELD_WIDTH/4;
+            SERVICE_IN_POINTS[1].y = SERVICE_FIELD_LENGTH - 2*BALL_RADIUS;
+
+            SERVICE_IN_POINTS[2] = {};
+            SERVICE_IN_POINTS[2].x = SINGLE_FIELD_WIDTH*5/12;
+            SERVICE_IN_POINTS[2].y = SERVICE_FIELD_LENGTH - 2*BALL_RADIUS;
+        }
+        
+        function initPoints() {
+            initGameOutPoints();
+            initGameInPoints();
+            initServiceFromPoints();
+            initServiceInPoints();
+            initServiceOutPoints();
+            initNetPoints();
+        }
+        
         function initCourt() {
             mCourt.style.width  = VIEW_WIDTH;
             mCourt.style.height = lenToView(COURT_LENGTH);
@@ -200,6 +364,7 @@
             initBall();
             initFlash();
             initPlayers();
+            initPoints();
         } 
         
         function movePlayerTo(playerDiv, x, y) {
@@ -242,10 +407,10 @@
             this.afterBoundPart = afterBoundPart;
         }
         
-        function makeService(duration, returnerId, shotPoint) {
-            return new CCourtAction(SERVICE_ID, duration, returnerId, 
-                                    shotPoint, shotPoint, 
-                                    0);
+        function makeService(duration, returnerId, returnerPoint, shotPoint, boundPoint) {
+            return new CCourtAction(SERVICE_ID, duration, returnerId, returnerPoint,
+                                    shotPoint, boundPoint, 
+                                    1);
         }
         
         function makeBoundShot(duration, returnerId, returnerPoint, shotPoint, boundPoint) {
@@ -333,6 +498,12 @@
             return outShot;
         }
         
+        function makePause(duration) {
+            return new CCourtAction(PAUSE_ID, duration, null/*returnerId*/, null/*returnerPoint*/, 
+                                    null/*shotPoint*/, null/*boundPoint*/, 
+                                    0.5);
+        }
+        
         function bezier2(t, a, b) {
             return (1-t)*a + t*b;
         }
@@ -352,9 +523,49 @@
             return p;
         }
         
+        function getCurrentFrame() {return pointAnimationFrames[0];}
+        
+        function animateService(time) {
+            var timePassed = time - animationStartTime;
+            var cmd = getCurrentFrame();
+            if (cmd == null) {
+                nextPointAnimationFrame();
+                return;
+            }
+
+            if (timePassed < 0) timePassed = 0;
+            if (timePassed > cmd.duration) timePassed = cmd.duration;
+            
+            movePlayerTo(playerDivFor(cmd.returnerId),   cmd.returnerPoint.x, cmd.returnerPoint.y);
+            movePlayerTo(playerDivFor(1-cmd.returnerId), cmd.shotPoint.x, cmd.shotPoint.y);
+            
+            moveBallTo(cmd.shotPoint.x, cmd.shotPoint.y);
+            moveBallShadowTo(cmd.shotPoint.x, cmd.shotPoint.y);
+            
+            if (Math.floor(timePassed*6/cmd.duration) % 2 == 0) {
+                if (cmd.shotPoint.y > 0) {
+                    moveFlashTo(cmd.shotPoint.x + BALL_RADIUS, cmd.shotPoint.y - BALL_RADIUS);
+                } else {
+                    moveFlashTo(cmd.shotPoint.x - BALL_RADIUS, cmd.shotPoint.y + BALL_RADIUS);
+                }
+            } else {
+                setFlashVisible(false);
+            }
+
+            if (timePassed < cmd.duration) {
+                requestAnimationFrame(animateService);
+            } else {
+                nextPointAnimationFrame();
+            }
+        }
+        
         function animateBoundShot(time) {
             var timePassed = time - animationStartTime;
-            var cmd = shotCommand;
+            var cmd = getCurrentFrame();
+            if (cmd == null) {
+                nextPointAnimationFrame();
+                return;
+            }
 
             if (timePassed < 0) timePassed = 0;
             if (timePassed > cmd.duration) timePassed = cmd.duration;
@@ -393,12 +604,18 @@
 
             if (timePassed < cmd.duration) {
                 requestAnimationFrame(animateBoundShot);
+            } else {
+                nextPointAnimationFrame();
             }
         }
         
         function animateBoundLossShot(time) {
             var timePassed = time - animationStartTime;
-            var cmd = shotCommand;
+            var cmd = getCurrentFrame();
+            if (cmd == null) {
+                nextPointAnimationFrame();
+                return;
+            }
 
             if (timePassed < 0) timePassed = 0;
             if (timePassed > cmd.duration) timePassed = cmd.duration;
@@ -442,12 +659,18 @@
 
             if (timePassed < cmd.duration) {
                 requestAnimationFrame(animateBoundLossShot);
+            } else {
+                nextPointAnimationFrame();
             }
         }
         
         function animateNetShot(time) {
             var timePassed = time - animationStartTime;
-            var cmd = shotCommand;
+            var cmd = getCurrentFrame();
+            if (cmd == null) {
+                nextPointAnimationFrame();
+                return;
+            }
 
             if (timePassed < 0) timePassed = 0;
             if (timePassed > cmd.duration) timePassed = cmd.duration;
@@ -462,10 +685,15 @@
                 moveBallTo(x, y);
                 moveBallShadowTo(x,y);
             } else {                            //draw ball after bound 
-                var t = (timePassed - boundDuration)/(boundDuration * cmd.afterBoundPart);
-                
                 moveFlashTo(cmd.boundPoint.x, cmd.boundPoint.y);
-                var x = bezier2(t, cmd.boundPoint.x, cmd.boundPoint.x-BALL_RADIUS*2);
+
+                var t = (timePassed - boundDuration)/(boundDuration * cmd.afterBoundPart);
+                var x;
+                if (cmd.shotPoint.x > cmd.boundPoint.x) {
+                    x = bezier2(t, cmd.boundPoint.x, cmd.boundPoint.x-BALL_RADIUS*2);
+                } else {
+                    x = bezier2(t, cmd.boundPoint.x, cmd.boundPoint.x+BALL_RADIUS*2);
+                }
                 
                 moveBallTo(x, cmd.boundPoint.y);
                 moveBallShadowTo(x, cmd.boundPoint.y);
@@ -479,12 +707,18 @@
 
             if (timePassed < cmd.duration) {
                 requestAnimationFrame(animateNetShot);
+            } else {
+                nextPointAnimationFrame();
             }
         }
 
         function animateOutShot(time) {
             var timePassed = time - animationStartTime;
-            var cmd = shotCommand;
+            var cmd = getCurrentFrame();
+            if (cmd == null) {
+                nextPointAnimationFrame();
+                return;
+            }
 
             if (timePassed < 0) timePassed = 0;
             if (timePassed > cmd.duration) timePassed = cmd.duration;
@@ -528,27 +762,126 @@
 
             if (timePassed < cmd.duration) {
                 requestAnimationFrame(animateOutShot);
+            } else {
+                nextPointAnimationFrame();
+            }
+        }
+
+        function animatePause(time) {
+            var timePassed = time - animationStartTime;
+            var cmd = getCurrentFrame();
+            if (cmd == null) {
+                nextPointAnimationFrame();
+                return;
+            }
+
+            if (timePassed < 0) timePassed = 0;
+            if (timePassed > cmd.duration) timePassed = cmd.duration;
+
+            if (timePassed < cmd.duration) {
+                requestAnimationFrame(animatePause);
+            } else {
+                nextPointAnimationFrame();
             }
         }
         
-        function onWinButtonClick() {
-            var startPoint = {};
-            var boundPoint = {};
-            var returnerPoint = {};
+        function nextPointAnimationFrame() {
+            setFlashVisible(false);
+            pointAnimationFrames.shift();
+            startPointAnimation();
+        }
+        
+        function startPointAnimation() {
+            if (pointAnimationFrames[0] == null) {
+                return;
+            }
             
-            startPoint.x = (SINGLE_FIELD_WIDTH/2);
-            startPoint.y = -FIELD_LENGTH;
-
-            boundPoint.x = -(SINGLE_FIELD_WIDTH/2 + (PAIR_FIELD_WIDTH - SINGLE_FIELD_WIDTH)/4);
-            boundPoint.y = FIELD_LENGTH/2;
-            
-            returnerPoint.x = 0;
-            returnerPoint.y = (FIELD_LENGTH);
-            
-            shotCommand = makeOutShot(1500, 0, returnerPoint, startPoint, boundPoint);
             animationStartTime = performance.now();
+            switch(pointAnimationFrames[0].actionType) {
+            case SERVICE_ID:    requestAnimationFrame(animateService); break;
+            case BOUND_SHOT_ID: requestAnimationFrame(animateBoundShot); break;
+            case BOUND_LOSS_ID: requestAnimationFrame(animateBoundLossShot); break;
+            case NET_ID:        requestAnimationFrame(animateNetShot); break;
+            case OUT_ID:        requestAnimationFrame(animateOutShot); break;
+            case PAUSE_ID:      requestAnimationFrame(animatePause); break;
+            }
+        }
+        
+        function getRandomPointFrom(arr) {
+            var point = arr[Math.floor(Math.random() * (arr.length))];
+
+            var pointCopy = {};
+            pointCopy.x = point.x;
+            pointCopy.y = point.y;
+
+            return pointCopy;
+        }
+        
+        function getAndScaleRandomPointFrom(arr, xscale, yscale) {
+            var point = getRandomPointFrom(arr);
+            point.x = xscale * point.x;
+            point.y = yscale * point.y;
             
-            requestAnimationFrame(animateOutShot);
+            return point;
+        }
+        
+        function getCurrentHalf() {
+            return 1; //TODO: зависит от счета в гейме
+        }
+        
+        function generateDoubleFaultFrames(serverId) {
+            var half = getCurrentHalf(); //половина, с которой выполняется подача
+            var side = 1; //сторона с которой выполняется подача
+            
+            if ((serverId % 2) != 0) {
+                side = -1;
+                half = -half;
+            }
+            
+            pointAnimationFrames = [];
+            
+            for (var i=0; i<2; i++) {
+                var shotPoint = getAndScaleRandomPointFrom(SERVICE_FROM_POINTS, half, side);
+                var returnerPoint = {};
+                returnerPoint.x = -shotPoint.x;
+                returnerPoint.y = -shotPoint.y;
+                
+                pointAnimationFrames.push(
+                    makeService(SERVICE_DURATION, 1-serverId, returnerPoint, shotPoint, shotPoint));
+                    
+                if (Math.random() < 0.5) { //in out
+                    var outPoint = getAndScaleRandomPointFrom(SERVICE_OUT_POINTS, -half, -side);
+                    
+                    pointAnimationFrames.push(
+                        makeOutShot(OUT_DURATION, 1-serverId, returnerPoint, shotPoint, outPoint));
+                } else { //in net
+                    var netPoint = getAndScaleRandomPointFrom(NET_POINTS, -half, side);
+                    
+                    pointAnimationFrames.push(
+                        makeNetShot(NET_DURATION, 1-serverId, returnerPoint, shotPoint, netPoint));
+                }
+                
+                if (i < 1) {
+                    pointAnimationFrames.push(makePause(PAUSE_DURATION));
+                }
+            }
+        }
+        
+        function generateWinnerFrames(serverId, winnerId) {
+            //winnerId бьет навылет, сюда же попадает и эйс!
+        }
+        
+        function generateOutFrames(serverId, winnerId) {
+            //(1-winnerId) попадает в аут!
+        }
+        
+        function generateNetFrames(serverId, winnerId) {
+            //(1-winnerId) попадает в сетку!
+        }
+        
+        function onWinButtonClick() {
+            generateDoubleFaultFrames(1);
+            startPointAnimation();
         }
         
         initCourt();
