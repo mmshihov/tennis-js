@@ -114,6 +114,8 @@
         var IN_DURATION      = 1200;
         var PAUSE_DURATION   = 1000;
         
+        var THIRD_POINT_SCALE = 0.25;
+        
         var GAME_OUT_POINTS;
         var GAME_IN_POINTS;
         var SERVICE_FROM_POINTS;
@@ -513,7 +515,7 @@
         }
         
         function getBezierThirdPoint(p1, p2) {
-            var k = 0.5;
+            var k = THIRD_POINT_SCALE;
             if (p1.x >= p2.x)
                 k = -k;
             
@@ -786,7 +788,6 @@
         }
         
         function nextPointAnimationFrame() {
-            setFlashVisible(false);
             pointAnimationFrames.shift();
             startPointAnimation();
         }
@@ -830,8 +831,8 @@
         }
         
         function generateDoubleFaultFrames(serverId) {
-            var half = getCurrentHalf(); //половина, с которой выполняется подача
-            var side = 1; //сторона с которой выполняется подача
+            var half = getCurrentHalf();
+            var side = 1;
             
             if ((serverId % 2) != 0) {
                 side = -1;
@@ -846,41 +847,165 @@
                 returnerPoint.x = -shotPoint.x;
                 returnerPoint.y = -shotPoint.y;
                 
-                pointAnimationFrames.push(
-                    makeService(SERVICE_DURATION, 1-serverId, returnerPoint, shotPoint, shotPoint));
-                    
-                if (Math.random() < 0.5) { //in out
-                    var outPoint = getAndScaleRandomPointFrom(SERVICE_OUT_POINTS, -half, -side);
-                    
-                    pointAnimationFrames.push(
-                        makeOutShot(OUT_DURATION, 1-serverId, returnerPoint, shotPoint, outPoint));
-                } else { //in net
-                    var netPoint = getAndScaleRandomPointFrom(NET_POINTS, -half, side);
-                    
-                    pointAnimationFrames.push(
-                        makeNetShot(NET_DURATION, 1-serverId, returnerPoint, shotPoint, netPoint));
-                }
+                generateBadServiceTry(serverId, returnerPoint, shotPoint, half, side);
                 
                 if (i < 1) {
                     pointAnimationFrames.push(makePause(PAUSE_DURATION));
                 }
             }
         }
+
+        function generateBadServiceTry(serverId, returnerPoint, shotPoint, half, side) {
+            pointAnimationFrames.push(
+                makeService(SERVICE_DURATION, 1-serverId, returnerPoint, shotPoint, shotPoint));
+                
+            if (Math.random() < 0.5) { //in out
+                var outPoint = getAndScaleRandomPointFrom(SERVICE_OUT_POINTS, -half, -side);
+                
+                pointAnimationFrames.push(
+                    makeOutShot(OUT_DURATION, 1-serverId, returnerPoint, shotPoint, outPoint));
+            } else { //in net
+                var netPoint = getAndScaleRandomPointFrom(NET_POINTS, -half, side);
+                
+                pointAnimationFrames.push(
+                    makeNetShot(NET_DURATION, 1-serverId, returnerPoint, shotPoint, netPoint));
+            }
+        }
         
         function generateWinnerFrames(serverId, winnerId) {
-            //winnerId бьет навылет, сюда же попадает и эйс!
+            var half = getCurrentHalf();
+            var side = 1;
+            
+            if ((serverId % 2) != 0) {
+                side = -1;
+                half = -half;
+            }
+            
+            pointAnimationFrames = [];
+            
+            var gameShotCount = Math.floor(Math.random() * 4)*2; //odd!
+            if (serverId != winnerId) {
+                gameShotCount = gameShotCount + 1;
+            }
+            
+            if (Math.random() < 0.3) {
+                var shotPoint = getAndScaleRandomPointFrom(SERVICE_FROM_POINTS, half, side);
+                var returnerPoint = {};
+                returnerPoint.x = -shotPoint.x;
+                returnerPoint.y = -shotPoint.y;
+                
+                generateBadServiceTry(serverId, returnerPoint, shotPoint, half, side);
+                pointAnimationFrames.push(makePause(PAUSE_DURATION));
+            }
+            
+            var shotPoint = getAndScaleRandomPointFrom(SERVICE_FROM_POINTS, half, side);
+            var returnerPoint = {};
+            returnerPoint.x = -shotPoint.x;
+            returnerPoint.y = -shotPoint.y;
+            
+            pointAnimationFrames.push(
+                makeService(SERVICE_DURATION, 1-serverId, returnerPoint, shotPoint, shotPoint));
+            
+            for (var i=0; i<gameShotCount; i++) {
+                var boundPoint = (i == 0) ? getAndScaleRandomPointFrom(SERVICE_IN_POINTS, -half, -side)
+                                          : getAndScaleRandomPointFrom(GAME_IN_POINTS, -half, -side);
+                var cmd = makeBoundShot(IN_DURATION, 1-serverId, returnerPoint, shotPoint, boundPoint);
+                
+                pointAnimationFrames.push(cmd);
+                
+                returnerPoint = {};
+                returnerPoint.x = shotPoint.x;
+                returnerPoint.y = shotPoint.y;
+                
+                shotPoint = {};
+                shotPoint.x = bezier2(1 + cmd.afterBoundPart, cmd.shotPoint.x, cmd.boundPoint.x);
+                shotPoint.y = bezier2(1 + cmd.afterBoundPart, cmd.shotPoint.y, cmd.boundPoint.y);
+                
+                side = -side;
+                serverId = 1 - serverId;
+                
+                if (Math.random() < 0.5) {
+                    half = -half;
+                }
+            }
+            
+            var boundPoint = getAndScaleRandomPointFrom(GAME_IN_POINTS, -half, -side);
+            pointAnimationFrames.push(
+                makeBoundLossShot(IN_DURATION, 1-serverId, returnerPoint, shotPoint, boundPoint));
         }
         
-        function generateOutFrames(serverId, winnerId) {
-            //(1-winnerId) попадает в аут!
-        }
-        
-        function generateNetFrames(serverId, winnerId) {
-            //(1-winnerId) попадает в сетку!
+        function generateErrorFrames(serverId, winnerId) {
+            var half = getCurrentHalf();
+            var side = 1;
+            
+            if ((serverId % 2) != 0) {
+                side = -1;
+                half = -half;
+            }
+            
+            pointAnimationFrames = [];
+            
+            var gameShotCount = Math.floor(Math.random() * 4)*2 + 1; 
+            if (serverId != winnerId) {
+                gameShotCount = gameShotCount + 1;
+            }
+            
+            if (Math.random() < 0.3) {
+                var shotPoint = getAndScaleRandomPointFrom(SERVICE_FROM_POINTS, half, side);
+                var returnerPoint = {};
+                returnerPoint.x = -shotPoint.x;
+                returnerPoint.y = -shotPoint.y;
+                
+                generateBadServiceTry(serverId, returnerPoint, shotPoint, half, side);
+                pointAnimationFrames.push(makePause(PAUSE_DURATION));
+            }
+            
+            var shotPoint = getAndScaleRandomPointFrom(SERVICE_FROM_POINTS, half, side);
+            var returnerPoint = {};
+            returnerPoint.x = -shotPoint.x;
+            returnerPoint.y = -shotPoint.y;
+            
+            pointAnimationFrames.push(
+                makeService(SERVICE_DURATION, 1-serverId, returnerPoint, shotPoint, shotPoint));
+            
+            for (var i=0; i<gameShotCount; i++) {
+                var boundPoint = (i == 0) ? getAndScaleRandomPointFrom(SERVICE_IN_POINTS, -half, -side)
+                                          : getAndScaleRandomPointFrom(GAME_IN_POINTS, -half, -side);
+                var cmd = makeBoundShot(IN_DURATION, 1-serverId, returnerPoint, shotPoint, boundPoint);
+                
+                pointAnimationFrames.push(cmd);
+                
+                returnerPoint = {};
+                returnerPoint.x = shotPoint.x;
+                returnerPoint.y = shotPoint.y;
+                
+                shotPoint = {};
+                shotPoint.x = bezier2(1 + cmd.afterBoundPart, cmd.shotPoint.x, cmd.boundPoint.x);
+                shotPoint.y = bezier2(1 + cmd.afterBoundPart, cmd.shotPoint.y, cmd.boundPoint.y);
+                
+                side = -side;
+                serverId = 1 - serverId;
+                
+                if (Math.random() < 0.5) {
+                    half = -half;
+                }
+            }
+            
+            if (Math.random() < 0.5) {
+                var netPoint = getAndScaleRandomPointFrom(NET_POINTS, -half, side);
+                pointAnimationFrames.push(
+                    makeNetShot(NET_DURATION, 1-serverId, returnerPoint, shotPoint, netPoint));
+            } else {
+                var outPoint = getAndScaleRandomPointFrom(GAME_OUT_POINTS, -half, -side);
+                pointAnimationFrames.push(
+                    makeOutShot(NET_DURATION, 1-serverId, returnerPoint, shotPoint, outPoint));
+            }
         }
         
         function onWinButtonClick() {
-            generateDoubleFaultFrames(1);
+            generateErrorFrames(1,1);
+            //generateDoubleFaultFrames(0);
+            //generateWinnerFrames(1,0);
             startPointAnimation();
         }
         
