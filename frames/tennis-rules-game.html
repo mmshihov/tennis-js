@@ -1002,10 +1002,28 @@
             }
         }
         
+        function getCurrentServerId() {
+            return 0;
+        }
+        
+        function generatePointWonFor(winnerId) {
+            var serverId = getCurrentServerId();
+            if (winnerId != serverId) {
+                if (Math.random() < 0.3) {
+                    generateDoubleFaultFrames(serverId);
+                    return;
+                }
+            }
+            
+            if (Math.random() < 0.5) {
+                generateErrorFrames(serverId, winnerId);
+            } else {
+                generateWinnerFrames(serverId, winnerId);
+            }
+        }
+        
         function onWinButtonClick() {
-            generateErrorFrames(1,1);
-            //generateDoubleFaultFrames(0);
-            //generateWinnerFrames(1,0);
+            generatePointWonFor(0);
             startPointAnimation();
         }
         
