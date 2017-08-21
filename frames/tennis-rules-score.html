@@ -1,0 +1,433 @@
+<html>
+<head>
+    <meta charset="utf-8">
+
+    <style>
+        .sTvScoreBoard {
+            display:block;
+            float:none;
+        }
+        
+        .sTvScoreBlock {
+            float:none;
+            clear:both;
+        }
+        
+        .sTvSet, .sTvPoint, .sTvPlayerField {
+            height: 30px;
+            line-height: 30px;
+            text-align: center;
+            vertical-align: middle;            
+            float:left;
+            background: #2e2e2e;
+            background: linear-gradient(to right, #7e7e7e, #2e2e2e, #7e7e7e);
+            -webkit-border-radius:2px;
+            -moz-border-radius:2px;
+            border-radius:2px;
+        }
+        
+        .sTvSet {
+            width: 30px;
+            color: white;
+        }
+        
+        .sTvPoint {
+            width: 40px;
+        }
+
+        .sTvPlayerField {
+            width:150px;
+            color: white;
+        }
+        
+        .sTvServiceMark {
+            position:absolute;
+            background-color:yellow;
+            -webkit-border-radius:50%/50%;
+            -moz-border-radius:50%/50%;
+            border-radius:50%/50%;
+            height:14px;
+            width:14px;
+            border-color:black;
+            border-width:1px;
+            border-style:solid;
+            margin-top:-7px;
+            top:50%;
+            left:2px;
+        }
+        
+        .sTvPoint {
+            background: #fefcea;
+            background: linear-gradient(to right, #fefcea, #f1da36, #fefcea);
+        }
+        
+        .sTvSet {}
+        
+        
+        .sTvPlayerField {
+            position:relative;
+        }
+        
+    </style>
+</head>
+<body>
+    <div id="mTvScoreBoard" class="sTvScoreBoard">
+        <div class="sTvScoreBlock">
+            <div class="sTvPlayerField">
+                <div id="mTvServiceMark1" class="sTvServiceMark"></div>
+                <div id="mTvPlayer1">Иванов</div>
+            </div>
+            <div id="mTvPoint1" class="sTvPoint">40</div>
+            <div id="mTvSet10" class="sTvSet">0</div>
+            <div id="mTvSet11" class="sTvSet">0</div>
+            <div id="mTvSet12" class="sTvSet">0</div>
+            <div id="mTvSet13" class="sTvSet">0</div>
+            <div id="mTvSet14" class="sTvSet">0</div>
+        </div>
+        <div class="sTvScoreBlock">
+            <div class="sTvPlayerField">
+                <div id="mTvServiceMark0" class="sTvServiceMark"></div>
+                <div id="mTvPlayer0">Петров</div>
+            </div>
+            <div id="mTvPoint0" class="sTvPoint">15</div>
+            <div id="mTvSet00" class="sTvSet">0</div>
+            <div id="mTvSet01" class="sTvSet">0</div>
+            <div id="mTvSet02" class="sTvSet">0</div>
+            <div id="mTvSet03" class="sTvSet">0</div>
+            <div id="mTvSet04" class="sTvSet">0</div>
+        </div>
+        <div style="clear:both"></div>
+    </div>
+    
+    <div>
+        <input type="button" value="Победить" onclick="onWinButtonClick()">
+        <input type="button" value="Проиграть" onclick="onLooseButtonClick()">
+        <br>
+        <input type="button" value="Победить" onclick="onWinGameButtonClick()">
+        <input type="button" value="Проиграть" onclick="onLooseGameButtonClick()">
+        <br>
+        <input type="button" value="Победить" onclick="onWinSetButtonClick()">
+        <input type="button" value="Проиграть" onclick="onLooseSetButtonClick()">
+    </div>
+    
+    <script>
+        var gScore = new CScore(0);
+        
+        function CScore(firstServerId) {
+            this.SET_COUNT      = 5;
+            this.TIEBREAK_SCORE = 6;
+            
+            this.firstServerId = firstServerId;
+            this.currentSet    = 0;
+            this.points        = [0,0];
+            this.sets          = [[0,0],[0,0],[0,0],[0,0],[0,0]];
+        }
+        
+        CScore.prototype.winPointBy = function(player) {
+            this.points[player] += 1;
+            this.updateScore();
+        }
+
+        CScore.prototype.winGameBy = function(player) {
+            if (!this.isFight()) {
+                return;
+            }
+
+            this.sets[this.currentSet][player] += 1;
+            this.points = [0,0];
+            this.updateScore();
+        }
+
+        CScore.prototype.winSetBy = function (player) {
+            this.giveSetTo(player);
+            this.updateScore();
+        }
+
+        CScore.prototype.giveSetTo = function (player) {
+            if (!this.isFight()) {
+                return;
+            }
+
+            player = player % 2;
+            
+            this.points = [0,0];
+
+            if (this.isTiebreak()) {
+                this.sets[this.currentSet][player] += 1;
+            } else {
+                if ((this.sets[this.currentSet][1-player] - this.sets[this.currentSet][player]) >= 1) {
+                    this.sets[this.currentSet][player] = this.sets[this.currentSet][1-player] + 1; 
+                }
+                
+                if (this.sets[this.currentSet][player] <= 5) {
+                    this.sets[this.currentSet][player] = 6;
+                } else {
+                    this.sets[this.currentSet][player] += 1;
+                }
+            }
+        }
+        
+        CScore.prototype.isTiebreak = function () {
+            if (!this.isFight()) {
+                return false;
+            }
+            
+            if (this.currentSet == 4) {
+                return false;
+            }
+            
+            return  (this.sets[this.currentSet][0] == this.TIEBREAK_SCORE) && 
+                    (this.sets[this.currentSet][1] == this.TIEBREAK_SCORE);
+        }
+
+        CScore.prototype.isBreakpoint = function () {
+            if ((!this.isFight()) || (this.isTiebreak())) {
+                return false;
+            }
+            
+            var player = this.serverId();
+            return this.isBeforeWinGame(this.points[1 - player], this.points[player]); 
+        }
+
+        CScore.prototype.isSetpoint = function () {
+            return this.isSetpointForPlayer(0) || this.isSetpointForPlayer(1);
+        }
+        
+        CScore.prototype.isSetpointForPlayer = function (player) {
+            if (!this.isFight()) {
+                return false;
+            }
+            
+            player = player % 2;
+            
+            if (this.isTiebreak()) {
+                return this.isTiebreakBeforeWinPoints(this.points[player], this.points[1-player]);
+            }
+            
+            return  this.isBeforeWinSet(this.sets[this.currentSet][player], this.sets[this.currentSet][1-player]) && 
+                    this.isBeforeWinGame(this.points[player], this.points[1-player]);
+        }
+
+        CScore.prototype.isMatchpoint = function () {
+            if (!this.isFight()) {
+                return false;
+            }
+            
+            var s0 = 0;
+            var s1 = 0;
+            
+            for (var i=0; i<this.currentSet; i++) {
+                if (this.sets[i][0] > this.sets[i][1]) {
+                    s0++;
+                } else {
+                    s1++;
+                }
+            }
+            
+            if ((s0 == 2) && (s1 == 2)) {
+                return this.isSetpoint();
+            } 
+            
+            if (s0 == 2) {
+                return this.isSetpointForPlayer(0);
+            } else if (s1 == 2) {
+                return this.isSetpointForPlayer(1);
+            }
+
+            return false;
+        }
+
+        CScore.prototype.serverId = function () {
+            var gameCount = 0;
+            for (var i=0; i <= this.currentSet; i++) {
+                gameCount += (this.sets[i][0] + this.sets[i][1]);
+            }
+        
+            var serverId = (gameCount + this.firstServerId) % 2;
+            if (this.isTiebreak()) {
+                var playerId = 1;
+                switch ((this.points[0] + this.points[1]) % 4) {
+                    case 0:
+                    case 3: playerId = 0; 
+                }
+                
+                serverId = (serverId + playerId) % 2;
+            } 
+            
+            return serverId;
+        }
+
+        CScore.prototype.serviceHalf = function () {
+            if (this.isFight()) {
+                if (this.isTiebreak()) {
+                    switch ((this.points[0] + this.points[1]) % 4) {
+                        case 0:
+                        case 1:  return 0;
+                        default: return 1;
+                    }
+                } else {
+                    return (this.points[0] + this.points[1]) % 2;
+                }
+            }
+            return 0;
+        }
+        
+        CScore.prototype.updateScore = function () {
+            if (!this.isFight()) {
+                return;
+            }
+            
+            if (this.isTiebreak()) {
+                if (this.isTiebreakWinPoints(this.points[0], this.points[1])) {
+                    this.sets[this.currentSet][0] += 1;
+                    this.points = [0,0];
+                    this.currentSet += 1;
+                } else if (this.isTiebreakWinPoints(this.points[1], this.points[0])) {
+                    this.sets[this.currentSet][1] += 1;
+                    this.points = [0,0];
+                    this.currentSet += 1;
+                }
+            } else {
+                if (this.isWinPoints(this.points[0], this.points[1])) {
+                    this.sets[this.currentSet][0] += 1;
+                    this.points = [0,0];
+                } else if (this.isWinPoints(this.points[1], this.points[0])) {
+                    this.sets[this.currentSet][1] += 1;
+                    this.points = [0,0];
+                }
+            
+                if (this.isWinGames(this.sets[this.currentSet][0], this.sets[this.currentSet][1])
+                    || this.isWinGames(this.sets[this.currentSet][1], this.sets[this.currentSet][0])) {
+                    
+                    this.points = [0,0];
+                    this.currentSet += 1;
+                }
+            }
+        }
+
+        CScore.prototype.isMatchWinner = function (player) {
+            var s = 0;
+            for (var i=0; i<this.currentSet; i++) {
+                if (this.sets[i][player] > this.sets[i][1-player]) {
+                    s++;
+                } 
+            }
+            return (s >= 3);
+        }
+        
+        CScore.prototype.isFight = function () {
+            return (!this.isMatchWinner(0)) && (!this.isMatchWinner(1));
+        }
+
+        CScore.prototype.isWinPoints = function (p0,p1) {
+            return (p0 >= 3) && ((p0 - p1) >= 2);
+        }
+
+        CScore.prototype.isBeforeWinGame = function (p0,p1) {
+            return (p0 >= 2) && ((p0 - p1) >= 1);
+        }
+
+        CScore.prototype.isTiebreakWinPoints = function (p0,p1) {
+            return (p0 >= 7) && ((p0 - p1) >= 2);
+        }
+
+        CScore.prototype.isTiebreakBeforeWinPoints = function (p0,p1) {
+            return (p0 >= 6) && ((p0 - p1) >= 1);
+        }
+
+        CScore.prototype.isWinGames = function (g0,g1) {
+            return ((g0 == 6) && ((g0 - g1) >= 2) || ((g0 > 6) && ((g0 - g1) > 0)));
+        }
+
+        CScore.prototype.isBeforeWinSet = function (g0,g1) {
+            return (g0 >= 5) && ((g0 - g1) >= 1);
+        }
+
+        CScore.prototype.pointsStringFor = function(player) {
+            player = player % 2;
+            
+            if (this.isTiebreak()) {
+                return this.points[player];
+            }
+            
+            if (this.points[player] == 0) {
+                return '0';
+            } else if (this.points[player] == 1) {
+                return '15';
+            } else if (this.points[player] == 2) {
+                return '30';
+            } else if (this.points[player] == 3) {
+                return '40';
+            } else if (this.points[player] > 3) {
+                if ((this.points[player] - this.points[1-player]) <= 0) {
+                    return '40';
+                } else if ((this.points[player] - this.points[1-player]) == 1) {
+                    return 'Ad';
+                }
+            }
+            
+            return 'WTF';
+        }
+        
+        
+        function onWinButtonClick() {
+            gScore.winPointBy(0);
+            viewScore();
+        }
+        
+        function onLooseButtonClick() {
+            gScore.winPointBy(1);
+            viewScore();
+        }
+
+        function onWinGameButtonClick() {
+            gScore.winGameBy(0);
+            viewScore();
+        }
+        
+        function onLooseGameButtonClick() {
+            gScore.winGameBy(1);
+            viewScore();
+        }
+        
+        function onWinSetButtonClick() {
+            gScore.winSetBy(0);
+            viewScore();
+        }
+        
+        function onLooseSetButtonClick() {
+            gScore.winSetBy(1);
+            viewScore();
+        }
+        
+        function viewScore() {
+            var str = "Счет:\nСеты: ";
+            for (var i=0; i < gScore.currentSet; i++) {
+                str += ("\"" + gScore.sets[i][0] + ":" + gScore.sets[i][1] + "\", ");
+            }
+            if (gScore.isFight() && (gScore.currentSet < 5)) {
+                var i = gScore.currentSet;
+                str += ("\"" + gScore.sets[i][0] + ":" + gScore.sets[i][1] + "\"");
+            }
+            
+            str += ("\nОчки: " + gScore.pointsStringFor(0) + ":" +  gScore.pointsStringFor(1) + "\n");
+            
+            str += ("\nПодает: " + gScore.serverId());
+            str += ("\nПоловина: " + gScore.serviceHalf());
+            if (gScore.isTiebreak()) {
+                str += "\nTiebreak";
+            } 
+            if (gScore.isMatchpoint()) {
+                str += "\nMatchpoint";
+            } 
+            if (gScore.isSetpoint()) {
+                str += "\nSetpoint";
+            } 
+            if (gScore.isBreakpoint()) {
+                str += "\nBreakpoint";
+            } 
+            alert(str);
+        }
+    </script>
+</body>
+</html>
