@@ -14,30 +14,31 @@
         }
         
         .sTvSet, .sTvPoint, .sTvPlayerField {
-            height: 30px;
-            line-height: 30px;
-            text-align: center;
-            vertical-align: middle;            
+            line-height:30px;
+            text-align:center;
+            vertical-align:middle;
             float:left;
-            background: #2e2e2e;
-            background: linear-gradient(to right, #7e7e7e, #2e2e2e, #7e7e7e);
+            background:#2e2e2e;
+            background:linear-gradient(to right, #7e7e7e, #2e2e2e, #7e7e7e);
             -webkit-border-radius:2px;
             -moz-border-radius:2px;
             border-radius:2px;
         }
         
         .sTvSet {
-            width: 30px;
-            color: white;
+            width:30px;
+            color:white;
+            font-family:Courier,Arial,Verdana,Helvetica,sans-serif;
+            font-size:14pt;
+            font-weight:bold;
         }
         
-        .sTvPoint {
-            width: 40px;
-        }
-
         .sTvPlayerField {
             width:150px;
-            color: white;
+            color:white;
+            font-family:Verdana,Arial,Helvetica,sans-serif;
+            font-size:12pt;
+            position:relative;
         }
         
         .sTvServiceMark {
@@ -57,59 +58,164 @@
         }
         
         .sTvPoint {
+            width: 40px;
             background: #fefcea;
             background: linear-gradient(to right, #fefcea, #f1da36, #fefcea);
+            font-family:Courier,Arial,Verdana,Helvetica,sans-serif;
+            font-size:14pt;
+            font-weight:bold;
+        }
+
+        .sTvSituationsLayer {
+            position:relative;
+            height:27px;
+            width:100px;
         }
         
-        .sTvSet {}
+        .sTvSituation {
+            left:10px;
+            top:1px;
+            width:135px;
+            color:yellow;
+            background: #2e2e2e;
+            background: linear-gradient(to top right, #7e7e7e, #2e2e2e, #7e7e7e);
+            -webkit-border-radius:5px;
+            -moz-border-radius:5px;
+            border-radius:20px 7px 7px 7px;
+            text-align:center;
+            border-color:red;
+            border-width:2px;
+            border-style:solid;
+            position:absolute;
+            font-family:Verdana,Arial,Helvetica,sans-serif;
+            font-size:12pt;
+        }
         
+        .sBigSb {
+            background-color:#37584d;
+        }
         
-        .sTvPlayerField {
+        .sBigSbTitle {
+            font-family:Verdana,Arial,Helvetica,sans-serif;
+            font-size:16pt;
+            color:white;
+            margin:7px 0 13px 0;
+            text-align:center;
+        }
+        
+        .sBigSbHint {
+            font-family:Verdana,Arial,Helvetica,sans-serif;
+            font-size:7pt;
+            color:white;
+            text-align:center;
+        }
+        
+        .sBigSbDigit {
+            width:16pt;
+            font-family:Courier,Arial,Verdana,Helvetica,sans-serif;
+            font-size:16pt;
+            text-align:center;
+            background-color:#2c2d28; 
+            color:#daf447; 
+            margin:2px; 
+        }
+
+        .sBigSbDigits {
+            width:32pt;
+            font-family:Courier,Arial,Verdana,Helvetica,sans-serif;
+            font-size:16pt;
+            text-align:center;
+            background-color:#2c2d28; 
+            color:#daf447; 
+            margin:2px; 
+        }
+        
+        .sBigSbPlayers {
+            width:120px;
+            font-family:Verdana,Arial,Helvetica,sans-serif;
+            font-size:12pt;
+            text-align:center;
+            background-color:#edc436; 
+            color:black;
+            margin:2px; 
+        }
+        
+        .sBigSbServiceMark {
+            position:absolute;
+            background-color:yellow;
+            -webkit-border-radius:50%/50%;
+            -moz-border-radius:50%/50%;
+            border-radius:50%/50%;
+            height:14px;
+            width:14px;
+            border-color:black;
+            border-width:1px;
+            border-style:solid;
+            margin-top:-7px;
+            margin-left:-7px;
+            top:50%;
+            left:50%;
+        }
+        
+        .sBigSbServiceMarkContainer {
+            height:17px;
+            width:17px;
             position:relative;
         }
         
     </style>
 </head>
 <body>
-
-    <table style="background-color:#37584d">
+    <p>Это турнирное табло:</p>
+    <table class="sBigSb">
         <tr>
-            <td colspan="9" style="color:white;">COURT No. 18</td>
+            <td colspan="9"><div class="sBigSbTitle">COURT No. 18</div></td>
         </tr>
         <tr>
-            <td colspan="4">PREVIOUS SETS</td>
-            <!-- player -->
+            <td colspan="4"><div class="sBigSbHint">PREVIOUS SETS</div></td>
             <td colspan="2"></td>
-            <td>SETS</td>
-            <td>GAMES</td>
-            <td>POINTS</td>
+            <td><div class="sBigSbHint">SETS</div></td>
+            <td><div class="sBigSbHint">GAMES</div></td>
+            <td><div class="sBigSbHint">POINTS</div></td>
         </tr>
         <tr>
-            <td><div style="background-color:#2c2d28; color:#daf447; margin:2px; text-align:center;">1</div></td>
-            <td><div style="background-color:#2c2d28; color:#daf447; margin:2px;">1</div></td>
-            <td>3</td>
-            <td>4</td>
-            <!-- player -->
-            <td style="background-color:#edc436; color:black;">Иванов</td>
-            <td>*</td>
-            <td>7</td>
-            <td>8</td>
-            <td>9</td>
+            <td><div id="mBigSbSet10" class="sBigSbDigit">1</div></td>
+            <td><div id="mBigSbSet11" class="sBigSbDigit">1</div></td>
+            <td><div id="mBigSbSet12" class="sBigSbDigit">1</div></td>
+            <td><div id="mBigSbSet13" class="sBigSbDigit">1</div></td>
+            <td><div id="mBigSbPlayer1" class="sBigSbPlayers">Иванов</div></td>
+            <td><div class="sBigSbServiceMarkContainer">
+                <div id="mBigSbServiceMark1" class="sBigSbServiceMark"></div>
+            </div></td>
+            <td><div id="mBigSbSets1" class="sBigSbDigit">1</div></td>
+            <td><div id="mBigSbGames1" class="sBigSbDigits">12</div></td>
+            <td><div id="mBigSbPoints1" class="sBigSbDigits">27</div></td>
         </tr>
         <tr>
-            <td><div style="background-color:#2c2d28; color:#daf447; margin:2px;">1</div></td>
-            <td><div style="background-color:#2c2d28; color:#daf447; margin:2px;">1</div></td>
-            <td>3</td>
-            <td>4</td>
-            <!-- player -->
-            <td>Петров</td>
-            <td>*</td>
-            <td>7</td>
-            <td>8</td>
-            <td>9</td>
+            <td><div id="mBigSbSet00" class="sBigSbDigit">2</div></td>
+            <td><div id="mBigSbSet01" class="sBigSbDigit">2</div></td>
+            <td><div id="mBigSbSet02" class="sBigSbDigit">2</div></td>
+            <td><div id="mBigSbSet03" class="sBigSbDigit">2</div></td>
+            <td><div id="mBigSbPlayer0" class="sBigSbPlayers">Петров</div></td>
+            <td><div class="sBigSbServiceMarkContainer">
+                <div id="mBigSbServiceMark0" class="sBigSbServiceMark"></div>
+            </div></td>
+            <td><div id="mBigSbSets0" class="sBigSbDigit">1</div></td>
+            <td><div id="mBigSbGames0" class="sBigSbDigits">12</div></td>
+            <td><div id="mBigSbPoints0" class="sBigSbDigits">27</div></td>
         </tr>
     </table>
+    
+    <p>А так обычно выглядит счет по TV:</p>
     <div id="mTvScoreBoard" class="sTvScoreBoard">
+        <div class="sTvScoreBlock">
+            <div class="sTvSituationsLayer">
+                <div id="mTvBreakpoint" class="sTvSituation">Breakpoint</div>
+                <div id="mTvSetpoint"   class="sTvSituation">Setpoint</div>
+                <div id="mTvMatchpiont" class="sTvSituation">Matchpoint</div>
+                <div id="mTvTiebreak"   class="sTvSituation">Tiebreak</div>
+            </div>
+        </div>
         <div class="sTvScoreBlock">
             <div class="sTvPlayerField">
                 <div id="mTvServiceMark1" class="sTvServiceMark"></div>
@@ -136,6 +242,8 @@
         </div>
         <div style="clear:both"></div>
     </div>
+    
+    <p>Попробуйте поиграть:</p>
     
     <div>
         <input type="button" value="Победить" onclick="onWinButtonClick()">
@@ -463,7 +571,9 @@
             } 
             if (gScore.isBreakpoint()) {
                 str += "\nBreakpoint";
-            } 
+            }
+            
+            mTvPoint0.innerHTML = gScore.pointsStringFor(0);
             alert(str);
         }
     </script>
