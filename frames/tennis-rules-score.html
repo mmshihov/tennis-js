@@ -166,7 +166,7 @@
     </style>
 </head>
 <body>
-    <p>Это турнирное табло:</p>
+    <p>Так выглядит табло на корте:</p>
     <table class="sBigSb">
         <tr>
             <td colspan="9"><div class="sBigSbTitle">COURT No. 18</div></td>
@@ -206,7 +206,7 @@
         </tr>
     </table>
     
-    <p>А так обычно выглядит счет по TV:</p>
+    <p>А так обычно отображают счет по TV:</p>
     <div id="mTvScoreBoard" class="sTvScoreBoard">
         <div class="sTvScoreBlock">
             <div class="sTvSituationsLayer">
@@ -270,6 +270,10 @@
         }
         
         CScore.prototype.winPointBy = function(player) {
+            if (!this.isFight()) {
+                return;
+            }
+
             this.points[player] += 1;
             this.updateScore();
         }
@@ -285,17 +289,15 @@
         }
 
         CScore.prototype.winSetBy = function (player) {
+            if (!this.isFight()) {
+                return;
+            }
+
             this.giveSetTo(player);
             this.updateScore();
         }
 
         CScore.prototype.giveSetTo = function (player) {
-            if (!this.isFight()) {
-                return;
-            }
-
-            player = player % 2;
-            
             this.points = [0,0];
 
             if (this.isTiebreak()) {
@@ -344,7 +346,7 @@
                 return false;
             }
             
-            player = player % 2;
+            player = player;
             
             if (this.isTiebreak()) {
                 return this.isTiebreakBeforeWinPoints(this.points[player], this.points[1-player]);
@@ -384,6 +386,10 @@
         }
 
         CScore.prototype.serverId = function () {
+            if (!this.isFight()) {
+                return 0;
+            }
+            
             var gameCount = 0;
             for (var i=0; i <= this.currentSet; i++) {
                 gameCount += (this.sets[i][0] + this.sets[i][1]);
@@ -442,8 +448,8 @@
                     this.points = [0,0];
                 }
             
-                if (this.isWinGames(this.sets[this.currentSet][0], this.sets[this.currentSet][1])
-                    || this.isWinGames(this.sets[this.currentSet][1], this.sets[this.currentSet][0])) {
+                if (this.isWinGames(this.sets[this.currentSet][0], this.sets[this.currentSet][1], this.currentSet)
+                 || this.isWinGames(this.sets[this.currentSet][1], this.sets[this.currentSet][0], this.currentSet)) {
                     
                     this.points = [0,0];
                     this.currentSet += 1;
@@ -451,14 +457,18 @@
             }
         }
 
-        CScore.prototype.isMatchWinner = function (player) {
+        CScore.prototype.wonSetsBy = function (player) {
             var s = 0;
             for (var i=0; i<this.currentSet; i++) {
                 if (this.sets[i][player] > this.sets[i][1-player]) {
                     s++;
                 } 
             }
-            return (s >= 3);
+            return s;
+        }
+        
+        CScore.prototype.isMatchWinner = function (player) {
+            return (this.wonSetsBy(player) >= 3);
         }
         
         CScore.prototype.isFight = function () {
@@ -481,8 +491,10 @@
             return (p0 >= 6) && ((p0 - p1) >= 1);
         }
 
-        CScore.prototype.isWinGames = function (g0,g1) {
-            return ((g0 == 6) && ((g0 - g1) >= 2) || ((g0 > 6) && ((g0 - g1) > 0)));
+        CScore.prototype.isWinGames = function (g0,g1,setIndex) {
+            return ((g0 == 6) && ((g0 - g1) >= 2) || 
+                   ((setIndex <  4) && (g0 >  6) && ((g0 - g1) > 0)) ||
+                   ((setIndex >= 4) && (g0 >= 6) && ((g0 - g1) > 2)));
         }
 
         CScore.prototype.isBeforeWinSet = function (g0,g1) {
@@ -490,7 +502,7 @@
         }
 
         CScore.prototype.pointsStringFor = function(player) {
-            player = player % 2;
+            player = player;
             
             if (this.isTiebreak()) {
                 return this.points[player];
@@ -512,7 +524,7 @@
                 }
             }
             
-            return 'WTF';
+            return '?';
         }
         
         
@@ -546,36 +558,100 @@
             viewScore();
         }
         
-        function viewScore() {
-            var str = "Счет:\nСеты: ";
-            for (var i=0; i < gScore.currentSet; i++) {
-                str += ("\"" + gScore.sets[i][0] + ":" + gScore.sets[i][1] + "\", ");
-            }
-            if (gScore.isFight() && (gScore.currentSet < 5)) {
-                var i = gScore.currentSet;
-                str += ("\"" + gScore.sets[i][0] + ":" + gScore.sets[i][1] + "\"");
+        function viewTvScore() {
+            var setIndex = 0;
+            var setScore;
+            for (; setIndex < gScore.currentSet; setIndex++) {
+                setScore = window.document.getElementById("mTvSet0" + setIndex);
+                setScore.innerHTML = gScore.sets[setIndex][0];
+                setScore.style.display = 'block';
+                
+                setScore = window.document.getElementById("mTvSet1" + setIndex);
+                setScore.innerHTML = gScore.sets[setIndex][1];
+                setScore.style.display = 'block';
             }
             
-            str += ("\nОчки: " + gScore.pointsStringFor(0) + ":" +  gScore.pointsStringFor(1) + "\n");
+            if (gScore.isFight()) {
+                setScore = window.document.getElementById("mTvSet0" + setIndex);
+                setScore.innerHTML = gScore.sets[setIndex][0];
+                setScore.style.display = 'block';
+                
+                setScore = window.document.getElementById("mTvSet1" + setIndex);
+                setScore.innerHTML = gScore.sets[setIndex][1];
+                setScore.style.display = 'block';
+            }
+
+            for (setIndex++; setIndex < 5; setIndex++) {
+                setScore = window.document.getElementById("mTvSet0" + setIndex);
+                setScore.style.display = 'none';
+                
+                setScore = window.document.getElementById("mTvSet1" + setIndex);
+                setScore.style.display = 'none';
+            }
             
-            str += ("\nПодает: " + gScore.serverId());
-            str += ("\nПоловина: " + gScore.serviceHalf());
-            if (gScore.isTiebreak()) {
-                str += "\nTiebreak";
-            } 
+            window.document.getElementById("mTvPoint0").innerHTML = gScore.pointsStringFor(0);
+            window.document.getElementById("mTvPoint1").innerHTML = gScore.pointsStringFor(1);
+            
+            mTvMatchpiont.style.display = 'none';
+            mTvSetpoint.style.display = 'none';
+            mTvBreakpoint.style.display = 'none';
+            mTvTiebreak.style.display = 'none';
+            
             if (gScore.isMatchpoint()) {
-                str += "\nMatchpoint";
-            } 
-            if (gScore.isSetpoint()) {
-                str += "\nSetpoint";
-            } 
-            if (gScore.isBreakpoint()) {
-                str += "\nBreakpoint";
+                mTvMatchpiont.style.display = 'block';
+            } else if (gScore.isSetpoint()) {
+                mTvSetpoint.style.display = 'block';
+            } else if (gScore.isBreakpoint()) {
+                mTvBreakpoint.style.display = 'block';
+            } else if (gScore.isTiebreak()) {
+                mTvTiebreak.style.display = 'block';
             }
             
-            mTvPoint0.innerHTML = gScore.pointsStringFor(0);
-            alert(str);
+            window.document.getElementById("mBigSbServiceMark" + gScore.serverId()).style.display = 
+                gScore.isFight() ? 'block' : 'none';
+            window.document.getElementById("mBigSbServiceMark" + (1-gScore.serverId())).style.display = 'none';
         }
+        
+        function viewBigSbScore() {
+            var setIndex = 0;
+            var setScore;
+            var previousSetCount = gScore.isFight() ? gScore.currentSet : (gScore.currentSet - 1)
+            for (; setIndex < previousSetCount; setIndex++) {
+                setScore = window.document.getElementById("mBigSbSet0" + setIndex);
+                setScore.innerHTML = gScore.sets[setIndex][0];
+                
+                setScore = window.document.getElementById("mBigSbSet1" + setIndex);
+                setScore.innerHTML = gScore.sets[setIndex][1];
+            }
+            
+            mBigSbGames0.innerHTML = gScore.sets[setIndex][0];
+            mBigSbGames1.innerHTML = gScore.sets[setIndex][1];
+            
+            for (; setIndex < 4; setIndex++) {
+                setScore = window.document.getElementById("mBigSbSet0" + setIndex);
+                setScore.innerHTML = "_";
+                
+                setScore = window.document.getElementById("mBigSbSet1" + setIndex);
+                setScore.innerHTML = "_";
+            }
+            
+            mBigSbPoints0.innerHTML = gScore.pointsStringFor(0);
+            mBigSbPoints1.innerHTML = gScore.pointsStringFor(1);
+            
+            mBigSbSets0.innerHTML = gScore.wonSetsBy(0);
+            mBigSbSets1.innerHTML = gScore.wonSetsBy(1);
+            
+            window.document.getElementById("mTvServiceMark" + gScore.serverId()).style.display = 
+                gScore.isFight() ? 'block' : 'none';
+            window.document.getElementById("mTvServiceMark" + (1-gScore.serverId())).style.display = 'none';
+        }
+        
+        function viewScore() {
+            viewTvScore();
+            viewBigSbScore();
+        }
+        
+        viewScore();
     </script>
 </body>
 </html>
