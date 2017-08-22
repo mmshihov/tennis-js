@@ -243,18 +243,30 @@
         <div style="clear:both"></div>
     </div>
     
-    <p>Попробуйте поиграть:</p>
+    <p>Попробуйте поиграть "виртуально":</p>
     
-    <div>
-        <input type="button" value="Победить" onclick="onWinButtonClick()">
-        <input type="button" value="Проиграть" onclick="onLooseButtonClick()">
-        <br>
-        <input type="button" value="Победить" onclick="onWinGameButtonClick()">
-        <input type="button" value="Проиграть" onclick="onLooseGameButtonClick()">
-        <br>
-        <input type="button" value="Победить" onclick="onWinSetButtonClick()">
-        <input type="button" value="Проиграть" onclick="onLooseSetButtonClick()">
-    </div>
+    <table class="sBigSb">
+        <tr>
+            <td></td>
+            <td><div class="sBigSbHint">SETS</div></td>
+            <td><div class="sBigSbHint">GAMES</div></td>
+            <td><div class="sBigSbHint">POINTS</div></td>
+        </tr>
+        <tr>
+            <td><div id="mBigSbPlayer0" class="sBigSbPlayers">Иванов выиграет:</div></td>
+            <td><input type="button" value="Сет"  onclick="onLooseSetButtonClick()"></td>
+            <td><input type="button" value="Гейм" onclick="onLooseGameButtonClick()"></td>
+            <td><input type="button" value="Очко" onclick="onLooseButtonClick()"></td>
+        </tr>
+        <tr>
+            <td><div id="mBigSbPlayer0" class="sBigSbPlayers">Петров выиграет:</div></td>
+            <td><input type="button" value="Сет"  onclick="onWinSetButtonClick()"></td>
+            <td><input type="button" value="Гейм" onclick="onWinGameButtonClick()"></td>
+            <td><input type="button" value="Очко" onclick="onWinButtonClick()"></td>
+        </tr>
+    </table>
+    
+    <p>Не все ясно? Попробуйте <input type="button" value="ещё раз." onclick="()"></p>
     
     <script>
         var gScore = new CScore(0);
