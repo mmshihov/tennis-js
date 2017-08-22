@@ -53,34 +53,287 @@
             border-radius:50%;
             position:absolute;
         }
+        .sTvScoreBoard {
+            display:block;
+            float:none;
+        }
+        .sTvScoreBlock {
+            float:none;
+            clear:both;
+        }
+        .sTvSet, .sTvPoint, .sTvPlayerField {
+            line-height:30px;
+            text-align:center;
+            vertical-align:middle;
+            float:left;
+            background:#2e2e2e;
+            background:linear-gradient(to right, #7e7e7e, #2e2e2e, #7e7e7e);
+            -webkit-border-radius:2px;
+            -moz-border-radius:2px;
+            border-radius:2px;
+        }
+        .sTvSet {
+            width:30px;
+            color:white;
+            font-family:Courier,Arial,Verdana,Helvetica,sans-serif;
+            font-size:14pt;
+            font-weight:bold;
+        }
+        .sTvPlayerField {
+            width:150px;
+            color:white;
+            font-family:Verdana,Arial,Helvetica,sans-serif;
+            font-size:12pt;
+            position:relative;
+        }
+        .sTvServiceMark {
+            position:absolute;
+            background-color:yellow;
+            -webkit-border-radius:50%/50%;
+            -moz-border-radius:50%/50%;
+            border-radius:50%/50%;
+            height:14px;
+            width:14px;
+            border-color:black;
+            border-width:1px;
+            border-style:solid;
+            margin-top:-7px;
+            top:50%;
+            left:2px;
+        }
+        .sTvPoint {
+            width: 40px;
+            background: #fefcea;
+            background: linear-gradient(to right, #fefcea, #f1da36, #fefcea);
+            font-family:Courier,Arial,Verdana,Helvetica,sans-serif;
+            font-size:14pt;
+            font-weight:bold;
+        }
+        .sTvSituationsLayer {
+            position:relative;
+            height:27px;
+            width:100px;
+        }
+        .sTvSituation {
+            left:10px;
+            top:1px;
+            width:135px;
+            color:yellow;
+            background: #2e2e2e;
+            background: linear-gradient(to top right, #7e7e7e, #2e2e2e, #7e7e7e);
+            -webkit-border-radius:5px;
+            -moz-border-radius:5px;
+            border-radius:20px 7px 7px 7px;
+            text-align:center;
+            border-color:red;
+            border-width:2px;
+            border-style:solid;
+            position:absolute;
+            font-family:Verdana,Arial,Helvetica,sans-serif;
+            font-size:12pt;
+        }
+        .sBigSb {
+            background-color:#37584d;
+        }
+        .sBigSbTitle {
+            font-family:Verdana,Arial,Helvetica,sans-serif;
+            font-size:16pt;
+            color:white;
+            margin:7px 0 13px 0;
+            text-align:center;
+        }
+        .sBigSbHint {
+            font-family:Verdana,Arial,Helvetica,sans-serif;
+            font-size:7pt;
+            color:white;
+            text-align:center;
+        }
+        .sBigSbDigit {
+            width:16pt;
+            font-family:Courier,Arial,Verdana,Helvetica,sans-serif;
+            font-size:16pt;
+            text-align:center;
+            background-color:#2c2d28; 
+            color:#daf447; 
+            margin:2px; 
+        }
+        .sBigSbDigits {
+            width:32pt;
+            font-family:Courier,Arial,Verdana,Helvetica,sans-serif;
+            font-size:16pt;
+            text-align:center;
+            background-color:#2c2d28; 
+            color:#daf447; 
+            margin:2px; 
+        }
+        .sBigSbPlayers {
+            width:120px;
+            font-family:Verdana,Arial,Helvetica,sans-serif;
+            font-size:12pt;
+            text-align:center;
+            background-color:#edc436; 
+            color:black;
+            margin:2px; 
+        }
+        .sBigSbServiceMark {
+            position:absolute;
+            background-color:yellow;
+            -webkit-border-radius:50%/50%;
+            -moz-border-radius:50%/50%;
+            border-radius:50%/50%;
+            height:14px;
+            width:14px;
+            border-color:black;
+            border-width:1px;
+            border-style:solid;
+            margin-top:-7px;
+            margin-left:-7px;
+            top:50%;
+            left:50%;
+        }
+        .sBigSbServiceMarkContainer {
+            height:17px;
+            width:17px;
+            position:relative;
+        }
     </style>
 </head>
 <body>
-    <div id="mCourt" class="sCourt">
-        <div id="mField" class="sField"></div>
-
-        <div id="mLineLeftOuter" class="sLine"></div>
-        <div id="mLineRightOuter" class="sLine"></div>
-        <div id="mLineLeftInner" class="sLine"></div>
-        <div id="mLineRightInner" class="sLine"></div>
-        <div id="mLineTopOuter" class="sLine"></div>
-        <div id="mLineBottomOuter" class="sLine"></div>
-        <div id="mLineTopInner" class="sLine"></div>
-        <div id="mLineBottomInner" class="sLine"></div>
-        <div id="mLineCentral" class="sLine"></div>
-        <div id="mLineTopMark" class="sLine"></div>
-        <div id="mLineBottomMark" class="sLine"></div>
+    <table><tr>
+    <td>
+        <p>Так выглядит табло на корте:</p>
+        <table class="sBigSb">
+            <tr>
+                <td colspan="9"><div class="sBigSbTitle">COURT No. 18</div></td>
+            </tr>
+            <tr>
+                <td colspan="4"><div class="sBigSbHint">PREVIOUS SETS</div></td>
+                <td colspan="2"></td>
+                <td><div class="sBigSbHint">SETS</div></td>
+                <td><div class="sBigSbHint">GAMES</div></td>
+                <td><div class="sBigSbHint">POINTS</div></td>
+            </tr>
+            <tr>
+                <td><div id="mBigSbSet10" class="sBigSbDigit">1</div></td>
+                <td><div id="mBigSbSet11" class="sBigSbDigit">1</div></td>
+                <td><div id="mBigSbSet12" class="sBigSbDigit">1</div></td>
+                <td><div id="mBigSbSet13" class="sBigSbDigit">1</div></td>
+                <td><div id="mBigSbPlayer1" class="sBigSbPlayers">Иванов</div></td>
+                <td><div class="sBigSbServiceMarkContainer">
+                    <div id="mBigSbServiceMark1" class="sBigSbServiceMark"></div>
+                </div></td>
+                <td><div id="mBigSbSets1" class="sBigSbDigit">1</div></td>
+                <td><div id="mBigSbGames1" class="sBigSbDigits">12</div></td>
+                <td><div id="mBigSbPoints1" class="sBigSbDigits">27</div></td>
+            </tr>
+            <tr>
+                <td><div id="mBigSbSet00" class="sBigSbDigit">2</div></td>
+                <td><div id="mBigSbSet01" class="sBigSbDigit">2</div></td>
+                <td><div id="mBigSbSet02" class="sBigSbDigit">2</div></td>
+                <td><div id="mBigSbSet03" class="sBigSbDigit">2</div></td>
+                <td><div id="mBigSbPlayer0" class="sBigSbPlayers">Петров</div></td>
+                <td><div class="sBigSbServiceMarkContainer">
+                    <div id="mBigSbServiceMark0" class="sBigSbServiceMark"></div>
+                </div></td>
+                <td><div id="mBigSbSets0" class="sBigSbDigit">1</div></td>
+                <td><div id="mBigSbGames0" class="sBigSbDigits">12</div></td>
+                <td><div id="mBigSbPoints0" class="sBigSbDigits">27</div></td>
+            </tr>
+        </table>
         
-        <div id="mNet" class="sNet"></div>
-
-        <div id="mMyPlayer" class="sMyPlayer"></div>
-        <div id="mHisPlayer" class="sHisPlayer"></div>
+        <p>А так обычно отображают счет по TV:</p>
+        <div id="mTvScoreBoard" class="sTvScoreBoard">
+            <div class="sTvScoreBlock">
+                <div class="sTvSituationsLayer">
+                    <div id="mTvBreakpoint" class="sTvSituation">Breakpoint</div>
+                    <div id="mTvSetpoint"   class="sTvSituation">Setpoint</div>
+                    <div id="mTvMatchpiont" class="sTvSituation">Matchpoint</div>
+                    <div id="mTvTiebreak"   class="sTvSituation">Tiebreak</div>
+                </div>
+            </div>
+            <div class="sTvScoreBlock">
+                <div class="sTvPlayerField">
+                    <div id="mTvServiceMark1" class="sTvServiceMark"></div>
+                    <div id="mTvPlayer1">Иванов</div>
+                </div>
+                <div id="mTvPoint1" class="sTvPoint">40</div>
+                <div id="mTvSet10" class="sTvSet">0</div>
+                <div id="mTvSet11" class="sTvSet">0</div>
+                <div id="mTvSet12" class="sTvSet">0</div>
+                <div id="mTvSet13" class="sTvSet">0</div>
+                <div id="mTvSet14" class="sTvSet">0</div>
+            </div>
+            <div class="sTvScoreBlock">
+                <div class="sTvPlayerField">
+                    <div id="mTvServiceMark0" class="sTvServiceMark"></div>
+                    <div id="mTvPlayer0">Петров</div>
+                </div>
+                <div id="mTvPoint0" class="sTvPoint">15</div>
+                <div id="mTvSet00" class="sTvSet">0</div>
+                <div id="mTvSet01" class="sTvSet">0</div>
+                <div id="mTvSet02" class="sTvSet">0</div>
+                <div id="mTvSet03" class="sTvSet">0</div>
+                <div id="mTvSet04" class="sTvSet">0</div>
+            </div>
+            <div style="clear:both"></div>
+        </div>
         
-        <div id="mBallShadow" class="sBallShadow"></div>
-        <div id="mBall" class="sBall"></div>
-        <div id="mFlash" class="sFlash"></div>
-    </div>
-    <input type="button" value="Победить" onclick="onWinButtonClick()">
+        <p>Попробуйте поиграть "виртуально":</p>
+        
+        <table class="sBigSb">
+            <tr>
+                <td></td>
+                <td><div class="sBigSbHint">SETS</div></td>
+                <td><div class="sBigSbHint">GAMES</div></td>
+                <td><div class="sBigSbHint">POINTS</div></td>
+            </tr>
+            <tr>
+                <td><div id="mBigSbPlayer1" class="sBigSbPlayers">Иванов выиграет:</div></td>
+                <td><input id="mLooseSet1Btn" type="button" value="Сет"  onclick="onLooseSetButtonClick()"></td>
+                <td><input id="mLooseGame1Btn" type="button" value="Гейм" onclick="onLooseGameButtonClick()"></td>
+                <td><input id="mLoosePoint1Btn" type="button" value="Очко" onclick="onLooseButtonClick()"></td>
+            </tr>
+            <tr>
+                <td><div id="mBigSbPlayer0" class="sBigSbPlayers">Петров выиграет:</div></td>
+                <td><input id="mLooseSet0Btn" type="button" value="Сет"  onclick="onWinSetButtonClick()"></td>
+                <td><input id="mLooseGame0Btn" type="button" value="Гейм" onclick="onWinGameButtonClick()"></td>
+                <td><input id="mLoosePoint0Btn" type="button" value="Очко" onclick="onWinButtonClick()"></td>
+            </tr>
+        </table>
+        
+        <p>Не все ясно? Попробуйте <input id="mPlayAgainBtn" type="button" value="ещё раз." onclick="onPlayAgain()"></p>
+    </td>
+    
+    <td>
+        <div id="mCourt" class="sCourt">
+            <div id="mField" class="sField"></div>
+
+            <div id="mLineLeftOuter" class="sLine"></div>
+            <div id="mLineRightOuter" class="sLine"></div>
+            <div id="mLineLeftInner" class="sLine"></div>
+            <div id="mLineRightInner" class="sLine"></div>
+            <div id="mLineTopOuter" class="sLine"></div>
+            <div id="mLineBottomOuter" class="sLine"></div>
+            <div id="mLineTopInner" class="sLine"></div>
+            <div id="mLineBottomInner" class="sLine"></div>
+            <div id="mLineCentral" class="sLine"></div>
+            <div id="mLineTopMark" class="sLine"></div>
+            <div id="mLineBottomMark" class="sLine"></div>
+            
+            <div id="mNet" class="sNet"></div>
+
+            <div id="mMyPlayer" class="sMyPlayer"></div>
+            <div id="mHisPlayer" class="sHisPlayer"></div>
+            
+            <div id="mBallShadow" class="sBallShadow"></div>
+            <div id="mBall" class="sBall"></div>
+            <div id="mFlash" class="sFlash"></div>
+        </div>
+    </td>
+    </tr>
+    </table>
+    
+    
     <script>
         var PAIR_FIELD_WIDTH     = 10.973; //metres
         var SINGLE_FIELD_WIDTH   = 8.23; 
@@ -126,6 +379,9 @@
         //globals
         var animationStartTime;
         var pointAnimationFrames;
+        
+        var gPointFor = 0;
+        var gScore = new CScore(0);
         
         function playerDivFor(player) {
             player = player % 2;
@@ -794,6 +1050,11 @@
         
         function startPointAnimation() {
             if (pointAnimationFrames[0] == null) {
+                gScore.winPointBy(gPointFor);
+                
+                viewScore();
+                allButtonsDisabledTo(false);
+
                 return;
             }
             
@@ -827,7 +1088,7 @@
         }
         
         function getCurrentHalf() {
-            return 1; //TODO: зависит от счета в гейме
+            return gScore.serviceHalf(); 
         }
         
         function generateDoubleFaultFrames(serverId) {
@@ -1003,7 +1264,7 @@
         }
         
         function getCurrentServerId() {
-            return 0;
+            return gScore.serverId();
         }
         
         function generatePointWonFor(winnerId) {
@@ -1021,13 +1282,418 @@
                 generateWinnerFrames(serverId, winnerId);
             }
         }
+
+        function CScore(firstServerId) {
+            this.SET_COUNT      = 5;
+            this.TIEBREAK_SCORE = 6;
+            
+            this.firstServerId = firstServerId;
+            this.currentSet    = 0;
+            this.points        = [0,0];
+            this.sets          = [[0,0],[0,0],[0,0],[0,0],[0,0]];
+        }
+        
+        CScore.prototype.winPointBy = function(player) {
+            if (!this.isFight()) {
+                return;
+            }
+
+            this.points[player] += 1;
+            this.updateScore();
+        }
+
+        CScore.prototype.winGameBy = function(player) {
+            if (!this.isFight()) {
+                return;
+            }
+
+            this.sets[this.currentSet][player] += 1;
+            this.points = [0,0];
+            this.updateScore();
+        }
+
+        CScore.prototype.winSetBy = function (player) {
+            if (!this.isFight()) {
+                return;
+            }
+
+            this.giveSetTo(player);
+            this.updateScore();
+        }
+
+        CScore.prototype.giveSetTo = function (player) {
+            this.points = [0,0];
+
+            if (this.isTiebreak()) {
+                this.sets[this.currentSet][player] += 1;
+            } else {
+                if ((this.sets[this.currentSet][1-player] - this.sets[this.currentSet][player]) >= 1) {
+                    this.sets[this.currentSet][player] = this.sets[this.currentSet][1-player] + 1; 
+                }
+                
+                if (this.sets[this.currentSet][player] <= 5) {
+                    this.sets[this.currentSet][player] = 6;
+                } else {
+                    this.sets[this.currentSet][player] += 1;
+                }
+            }
+        }
+        
+        CScore.prototype.isTiebreak = function () {
+            if (!this.isFight()) {
+                return false;
+            }
+            
+            if (this.currentSet == 4) {
+                return false;
+            }
+            
+            return  (this.sets[this.currentSet][0] == this.TIEBREAK_SCORE) && 
+                    (this.sets[this.currentSet][1] == this.TIEBREAK_SCORE);
+        }
+
+        CScore.prototype.isBreakpoint = function () {
+            if ((!this.isFight()) || (this.isTiebreak())) {
+                return false;
+            }
+            
+            var player = this.serverId();
+            return this.isBeforeWinGame(this.points[1 - player], this.points[player]); 
+        }
+
+        CScore.prototype.isSetpoint = function () {
+            return this.isSetpointForPlayer(0) || this.isSetpointForPlayer(1);
+        }
+        
+        CScore.prototype.isSetpointForPlayer = function (player) {
+            if (!this.isFight()) {
+                return false;
+            }
+            
+            player = player;
+            
+            if (this.isTiebreak()) {
+                return this.isTiebreakBeforeWinPoints(this.points[player], this.points[1-player]);
+            }
+            
+            return  this.isBeforeWinSet(this.sets[this.currentSet][player], this.sets[this.currentSet][1-player]) && 
+                    this.isBeforeWinGame(this.points[player], this.points[1-player]);
+        }
+
+        CScore.prototype.isMatchpoint = function () {
+            if (!this.isFight()) {
+                return false;
+            }
+            
+            var s0 = 0;
+            var s1 = 0;
+            
+            for (var i=0; i<this.currentSet; i++) {
+                if (this.sets[i][0] > this.sets[i][1]) {
+                    s0++;
+                } else {
+                    s1++;
+                }
+            }
+            
+            if ((s0 == 2) && (s1 == 2)) {
+                return this.isSetpoint();
+            } 
+            
+            if (s0 == 2) {
+                return this.isSetpointForPlayer(0);
+            } else if (s1 == 2) {
+                return this.isSetpointForPlayer(1);
+            }
+
+            return false;
+        }
+
+        CScore.prototype.serverId = function () {
+            if (!this.isFight()) {
+                return 0;
+            }
+            
+            var gameCount = 0;
+            for (var i=0; i <= this.currentSet; i++) {
+                gameCount += (this.sets[i][0] + this.sets[i][1]);
+            }
+        
+            var serverId = (gameCount + this.firstServerId) % 2;
+            if (this.isTiebreak()) {
+                var playerId = 1;
+                switch ((this.points[0] + this.points[1]) % 4) {
+                    case 0:
+                    case 3: playerId = 0; 
+                }
+                
+                serverId = (serverId + playerId) % 2;
+            } 
+            
+            return serverId;
+        }
+
+        CScore.prototype.serviceHalf = function () {
+            if (this.isFight()) {
+                if (this.isTiebreak()) {
+                    switch ((this.points[0] + this.points[1]) % 4) {
+                        case 0:
+                        case 1:  return 1;
+                        default: return -1;
+                    }
+                } else {
+                    return 1-2*((this.points[0] + this.points[1]) % 2);
+                }
+            }
+            return 0;
+        }
+        
+        CScore.prototype.updateScore = function () {
+            if (!this.isFight()) {
+                return;
+            }
+            
+            if (this.isTiebreak()) {
+                if (this.isTiebreakWinPoints(this.points[0], this.points[1])) {
+                    this.sets[this.currentSet][0] += 1;
+                    this.points = [0,0];
+                    this.currentSet += 1;
+                } else if (this.isTiebreakWinPoints(this.points[1], this.points[0])) {
+                    this.sets[this.currentSet][1] += 1;
+                    this.points = [0,0];
+                    this.currentSet += 1;
+                }
+            } else {
+                if (this.isWinPoints(this.points[0], this.points[1])) {
+                    this.sets[this.currentSet][0] += 1;
+                    this.points = [0,0];
+                } else if (this.isWinPoints(this.points[1], this.points[0])) {
+                    this.sets[this.currentSet][1] += 1;
+                    this.points = [0,0];
+                }
+            
+                if (this.isWinGames(this.sets[this.currentSet][0], this.sets[this.currentSet][1], this.currentSet)
+                 || this.isWinGames(this.sets[this.currentSet][1], this.sets[this.currentSet][0], this.currentSet)) {
+                    
+                    this.points = [0,0];
+                    this.currentSet += 1;
+                }
+            }
+        }
+
+        CScore.prototype.wonSetsBy = function (player) {
+            var s = 0;
+            for (var i=0; i<this.currentSet; i++) {
+                if (this.sets[i][player] > this.sets[i][1-player]) {
+                    s++;
+                } 
+            }
+            return s;
+        }
+        
+        CScore.prototype.isMatchWinner = function (player) {
+            return (this.wonSetsBy(player) >= 3);
+        }
+        
+        CScore.prototype.isFight = function () {
+            return (!this.isMatchWinner(0)) && (!this.isMatchWinner(1));
+        }
+
+        CScore.prototype.isWinPoints = function (p0,p1) {
+            return (p0 >= 3) && ((p0 - p1) >= 2);
+        }
+
+        CScore.prototype.isBeforeWinGame = function (p0,p1) {
+            return (p0 >= 2) && ((p0 - p1) >= 1);
+        }
+
+        CScore.prototype.isTiebreakWinPoints = function (p0,p1) {
+            return (p0 >= 7) && ((p0 - p1) >= 2);
+        }
+
+        CScore.prototype.isTiebreakBeforeWinPoints = function (p0,p1) {
+            return (p0 >= 6) && ((p0 - p1) >= 1);
+        }
+
+        CScore.prototype.isWinGames = function (g0,g1,setIndex) {
+            return ((g0 == 6) && ((g0 - g1) >= 2) || 
+                   ((setIndex <  4) && (g0 >  6) && ((g0 - g1) > 0)) ||
+                   ((setIndex >= 4) && (g0 >= 6) && ((g0 - g1) > 2)));
+        }
+
+        CScore.prototype.isBeforeWinSet = function (g0,g1) {
+            return (g0 >= 5) && ((g0 - g1) >= 1);
+        }
+
+        CScore.prototype.pointsStringFor = function(player) {
+            player = player;
+            
+            if (this.isTiebreak()) {
+                return this.points[player];
+            }
+            
+            if (this.points[player] == 0) {
+                return '0';
+            } else if (this.points[player] == 1) {
+                return '15';
+            } else if (this.points[player] == 2) {
+                return '30';
+            } else if (this.points[player] == 3) {
+                return '40';
+            } else if (this.points[player] > 3) {
+                if ((this.points[player] - this.points[1-player]) <= 0) {
+                    return '40';
+                } else if ((this.points[player] - this.points[1-player]) == 1) {
+                    return 'Ad';
+                }
+            }
+            
+            return '?';
+        }
         
         function onWinButtonClick() {
+            gPointFor = 0;
             generatePointWonFor(0);
+            allButtonsDisabledTo(true);
             startPointAnimation();
         }
         
+        function onLooseButtonClick() {
+            gPointFor = 1;
+            generatePointWonFor(1);
+            allButtonsDisabledTo(true);
+            startPointAnimation();
+        }
+
+        function onWinGameButtonClick() {
+            gScore.winGameBy(0);
+            viewScore();
+        }
+        
+        function onLooseGameButtonClick() {
+            gScore.winGameBy(1);
+            viewScore();
+        }
+        
+        function onWinSetButtonClick() {
+            gScore.winSetBy(0);
+            viewScore();
+        }
+        
+        function onLooseSetButtonClick() {
+            gScore.winSetBy(1);
+            viewScore();
+        }
+        
+        function onPlayAgain() {
+            gScore = new CScore(0);
+            viewScore();
+        }
+       
+        function allButtonsDisabledTo(value) {
+            mLooseSet0Btn.disabled = value;
+            mLooseSet1Btn.disabled = value;
+            mLooseGame0Btn.disabled = value;
+            mLooseGame1Btn.disabled = value;
+            mLoosePoint0Btn.disabled = value;
+            mLoosePoint1Btn.disabled = value;
+        }
+        
+        function viewTvScore() {
+            var setIndex = 0;
+            var setScore;
+            for (; setIndex < gScore.currentSet; setIndex++) {
+                setScore = window.document.getElementById("mTvSet0" + setIndex);
+                setScore.innerHTML = gScore.sets[setIndex][0];
+                setScore.style.display = 'block';
+                
+                setScore = window.document.getElementById("mTvSet1" + setIndex);
+                setScore.innerHTML = gScore.sets[setIndex][1];
+                setScore.style.display = 'block';
+            }
+            
+            if (gScore.isFight()) {
+                setScore = window.document.getElementById("mTvSet0" + setIndex);
+                setScore.innerHTML = gScore.sets[setIndex][0];
+                setScore.style.display = 'block';
+                
+                setScore = window.document.getElementById("mTvSet1" + setIndex);
+                setScore.innerHTML = gScore.sets[setIndex][1];
+                setScore.style.display = 'block';
+            }
+
+            for (setIndex++; setIndex < 5; setIndex++) {
+                setScore = window.document.getElementById("mTvSet0" + setIndex);
+                setScore.style.display = 'none';
+                
+                setScore = window.document.getElementById("mTvSet1" + setIndex);
+                setScore.style.display = 'none';
+            }
+            
+            window.document.getElementById("mTvPoint0").innerHTML = gScore.pointsStringFor(0);
+            window.document.getElementById("mTvPoint1").innerHTML = gScore.pointsStringFor(1);
+            
+            mTvMatchpiont.style.display = 'none';
+            mTvSetpoint.style.display = 'none';
+            mTvBreakpoint.style.display = 'none';
+            mTvTiebreak.style.display = 'none';
+            
+            if (gScore.isMatchpoint()) {
+                mTvMatchpiont.style.display = 'block';
+            } else if (gScore.isSetpoint()) {
+                mTvSetpoint.style.display = 'block';
+            } else if (gScore.isBreakpoint()) {
+                mTvBreakpoint.style.display = 'block';
+            } else if (gScore.isTiebreak()) {
+                mTvTiebreak.style.display = 'block';
+            }
+            
+            window.document.getElementById("mBigSbServiceMark" + gScore.serverId()).style.display = 
+                gScore.isFight() ? 'block' : 'none';
+            window.document.getElementById("mBigSbServiceMark" + (1-gScore.serverId())).style.display = 'none';
+        }
+        
+        function viewBigSbScore() {
+            var setIndex = 0;
+            var setScore;
+            var previousSetCount = gScore.isFight() ? gScore.currentSet : (gScore.currentSet - 1)
+            for (; setIndex < previousSetCount; setIndex++) {
+                setScore = window.document.getElementById("mBigSbSet0" + setIndex);
+                setScore.innerHTML = gScore.sets[setIndex][0];
+                
+                setScore = window.document.getElementById("mBigSbSet1" + setIndex);
+                setScore.innerHTML = gScore.sets[setIndex][1];
+            }
+            
+            mBigSbGames0.innerHTML = gScore.sets[setIndex][0];
+            mBigSbGames1.innerHTML = gScore.sets[setIndex][1];
+            
+            for (; setIndex < 4; setIndex++) {
+                setScore = window.document.getElementById("mBigSbSet0" + setIndex);
+                setScore.innerHTML = "_";
+                
+                setScore = window.document.getElementById("mBigSbSet1" + setIndex);
+                setScore.innerHTML = "_";
+            }
+            
+            mBigSbPoints0.innerHTML = gScore.pointsStringFor(0);
+            mBigSbPoints1.innerHTML = gScore.pointsStringFor(1);
+            
+            mBigSbSets0.innerHTML = gScore.wonSetsBy(0);
+            mBigSbSets1.innerHTML = gScore.wonSetsBy(1);
+            
+            window.document.getElementById("mTvServiceMark" + gScore.serverId()).style.display = 
+                gScore.isFight() ? 'block' : 'none';
+            window.document.getElementById("mTvServiceMark" + (1-gScore.serverId())).style.display = 'none';
+        }
+        
+        function viewScore() {
+            viewTvScore();
+            viewBigSbScore();
+        }
+        
         initCourt();
+        viewScore();
     </script>
 </body>
 </html>
