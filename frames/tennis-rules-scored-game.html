@@ -3,11 +3,11 @@
     <meta charset="utf-8">
     <style>
         .sCourt {
-            background-color:orange;
+            background-color:#75c61e;
             position:relative;
         }
         .sField {
-            background-color:blue;
+            background-color:#3271ac;
             position:absolute;
         }
         .sLine {
@@ -15,7 +15,7 @@
             position:absolute;
         }
         .sNet {
-            background-color:gray;
+            background-color:#474535;
             position:absolute;
         }
         .sBall {
@@ -32,19 +32,23 @@
             border-radius:50%/50%;
             position:absolute;
         }
-        .sMyPlayer {
+        .sPlayer {
             -webkit-border-radius:50%;
             -moz-border-radius:50%;
             border-radius:50%;
             position:absolute;
-            background-color:green;
+            background-color:#edc436;
+            border-color:black;
+            border-width:1px;
+            border-style:solid;
         }
-        .sHisPlayer {
-            -webkit-border-radius:50%;
-            -moz-border-radius:50%;
-            border-radius:50%;
+        .sPlayerHint {
             position:absolute;
-            background-color:gray;
+            width:120px;
+            font-family:Verdana,Arial,Helvetica,sans-serif;
+            font-size:10pt;
+            font-weight:bold;
+            color:black;
         }
         .sFlash {
             background-color:red;
@@ -196,12 +200,18 @@
             width:17px;
             position:relative;
         }
+        .sPointHint {
+            font-family:Verdana,Arial,Helvetica,sans-serif;
+            font-size:12pt;
+            color:black;
+            width:500px;
+        }
     </style>
 </head>
 <body>
     <table><tr>
     <td>
-        <p>Так выглядит табло на корте:</p>
+        <p>Примерно так выглядит табло на корте:</p>
         <table class="sBigSb">
             <tr>
                 <td colspan="9"><div class="sBigSbTitle">COURT No. 18</div></td>
@@ -262,6 +272,7 @@
                 <div id="mTvSet12" class="sTvSet">0</div>
                 <div id="mTvSet13" class="sTvSet">0</div>
                 <div id="mTvSet14" class="sTvSet">0</div>
+                <div style="clear:both"></div>
             </div>
             <div class="sTvScoreBlock">
                 <div class="sTvPlayerField">
@@ -274,6 +285,7 @@
                 <div id="mTvSet02" class="sTvSet">0</div>
                 <div id="mTvSet03" class="sTvSet">0</div>
                 <div id="mTvSet04" class="sTvSet">0</div>
+                <div style="clear:both"></div>
             </div>
             <div style="clear:both"></div>
         </div>
@@ -322,14 +334,17 @@
             
             <div id="mNet" class="sNet"></div>
 
-            <div id="mMyPlayer" class="sMyPlayer"></div>
-            <div id="mHisPlayer" class="sHisPlayer"></div>
+            <div id="mMyPlayer" class="sPlayer"><div id="mMyPlayerHint" class="sPlayerHint">Петров</div></div>
+            <div id="mHisPlayer" class="sPlayer"><div id="mHisPlayerHint" class="sPlayerHint">Иванов</div></div>
             
             <div id="mBallShadow" class="sBallShadow"></div>
             <div id="mBall" class="sBall"></div>
             <div id="mFlash" class="sFlash"></div>
         </div>
     </td>
+    </tr>
+    <tr>
+        <td colspan="2"><div id="mPointHint" class="sPointHint">Point hint</div></td>
     </tr>
     </table>
     
@@ -382,10 +397,14 @@
         
         var gPointFor = 0;
         var gScore = new CScore(0);
+        var gPointHint;
+        
+        function playerNameFor(player) {
+            return ["Петров", "Иванов"][player % 2];
+        }
         
         function playerDivFor(player) {
-            player = player % 2;
-            return (player == 0) ? mMyPlayer : mHisPlayer;
+            return ((player % 2) == 0) ? mMyPlayer : mHisPlayer;
         }
         
         function lenToView(len) {
@@ -429,6 +448,8 @@
             
             moveBallTo(0,0);
             moveBallShadowTo(0,0);
+            
+            setFlashVisible(false);
         }
         
         function initFlash() {
@@ -440,13 +461,33 @@
             playerDiv.style.height = lenToView(PLAYER_HEIGHT);
             playerDiv.style.width = lenToView(PLAYER_WIDTH);
         }
+
+        function movePlayersToNet() {
+            movePlayerTo(mMyPlayer,  0,  PLAYER_HEIGHT);
+            movePlayerTo(mHisPlayer, 0, -PLAYER_HEIGHT);
+
+            moveBallTo(0,0);
+            moveBallShadowTo(0,0);
+            
+            setFlashVisible(false);
+        }
+        
+        function movePlayersToBench() {
+            movePlayerTo(mMyPlayer,  -(COURT_WIDTH + PAIR_FIELD_WIDTH)/4,  PLAYER_HEIGHT);
+            movePlayerTo(mHisPlayer, -(COURT_WIDTH + PAIR_FIELD_WIDTH)/4, -PLAYER_HEIGHT);
+
+            moveBallTo(0,0);
+            moveBallShadowTo(0,0);
+            
+            setFlashVisible(false);
+        }
         
         function initPlayers() {
             initPlayer(mMyPlayer);
-            movePlayerTo(mMyPlayer, 0, FIELD_LENGTH);
-            
+            mMyPlayerHint.style.left = lenToView(PLAYER_WIDTH) + 5;
+
             initPlayer(mHisPlayer);
-            movePlayerTo(mHisPlayer, 0, -FIELD_LENGTH);
+            mHisPlayerHint.style.left = lenToView(PLAYER_WIDTH) + 5;
         }
         
         function initGameOutPoints() {
@@ -591,6 +632,8 @@
         }
         
         function initCourt() {
+            initPoints();
+            
             mCourt.style.width  = VIEW_WIDTH;
             mCourt.style.height = lenToView(COURT_LENGTH);
             
@@ -622,7 +665,9 @@
             initBall();
             initFlash();
             initPlayers();
-            initPoints();
+            
+            movePlayersToNet();
+            hidePointHiht();
         } 
         
         function movePlayerTo(playerDiv, x, y) {
@@ -910,9 +955,9 @@
                     bezier2(1 + cmd.afterBoundPart, cmd.shotPoint.y, cmd.boundPoint.y)));
                     
             movePlayerTo(playerDivFor(cmd.returnerId),
-                bezier2(t*t, cmd.returnerPoint.x, 
+                bezier2(t*t/2, cmd.returnerPoint.x, 
                     bezier2(1 + cmd.afterBoundPart/2, cmd.shotPoint.x, cmd.boundPoint.x)),
-                bezier2(t*t, cmd.returnerPoint.y, 
+                bezier2(t*t/2, cmd.returnerPoint.y, 
                     bezier2(1 + cmd.afterBoundPart/2, cmd.shotPoint.y, cmd.boundPoint.y)));
 
             if (timePassed < cmd.duration) {
@@ -1053,6 +1098,8 @@
                 gScore.winPointBy(gPointFor);
                 
                 viewScore();
+                viewPointHiht();
+                
                 allButtonsDisabledTo(false);
 
                 return;
@@ -1094,6 +1141,9 @@
         function generateDoubleFaultFrames(serverId) {
             var half = getCurrentHalf();
             var side = 1;
+            
+            gPointHint = playerNameFor(1-serverId) + " выиграл очко, потому что " + playerNameFor(serverId) + 
+                         " дважды ошибся на подаче."
             
             if ((serverId % 2) != 0) {
                 side = -1;
@@ -1137,6 +1187,9 @@
             var half = getCurrentHalf();
             var side = 1;
             
+            gPointHint = playerNameFor(winnerId) + " активно выиграл очко, потому что " + 
+                         playerNameFor(1-winnerId) + " не смог отбить его удар.";
+            
             if ((serverId % 2) != 0) {
                 side = -1;
                 half = -half;
@@ -1149,7 +1202,10 @@
                 gameShotCount = gameShotCount + 1;
             }
             
+            var isBadFirstService = false;
             if (Math.random() < 0.3) {
+                isBadFirstService = true;
+                
                 var shotPoint = getAndScaleRandomPointFrom(SERVICE_FROM_POINTS, half, side);
                 var returnerPoint = {};
                 returnerPoint.x = -shotPoint.x;
@@ -1190,15 +1246,24 @@
                 }
             }
             
-            var boundPoint = getAndScaleRandomPointFrom(GAME_IN_POINTS, -half, -side);
+            var boundPoint = (gameShotCount == 0) ? 
+                  getAndScaleRandomPointFrom(SERVICE_IN_POINTS, -half, -side)
+                : getAndScaleRandomPointFrom(GAME_IN_POINTS, -half, -side);
+                
             pointAnimationFrames.push(
                 makeBoundLossShot(IN_DURATION, 1-serverId, returnerPoint, shotPoint, boundPoint));
+                
+            if (isBadFirstService) {
+                gPointHint += (" При этом " + playerNameFor(serverId) + " один раз ошибся на подаче.");
+            }
         }
         
         function generateErrorFrames(serverId, winnerId) {
             var half = getCurrentHalf();
             var side = 1;
             
+            gPointHint = playerNameFor(winnerId) + " выиграл очко, потому что " + playerNameFor(1-winnerId);
+
             if ((serverId % 2) != 0) {
                 side = -1;
                 half = -half;
@@ -1211,7 +1276,10 @@
                 gameShotCount = gameShotCount + 1;
             }
             
+            var isBadFirstService = false;
             if (Math.random() < 0.3) {
+                isBadFirstService = true;
+                
                 var shotPoint = getAndScaleRandomPointFrom(SERVICE_FROM_POINTS, half, side);
                 var returnerPoint = {};
                 returnerPoint.x = -shotPoint.x;
@@ -1256,10 +1324,17 @@
                 var netPoint = getAndScaleRandomPointFrom(NET_POINTS, -half, side);
                 pointAnimationFrames.push(
                     makeNetShot(NET_DURATION, 1-serverId, returnerPoint, shotPoint, netPoint));
+                    
+                gPointHint += " отбил мяч в сетку.";
             } else {
                 var outPoint = getAndScaleRandomPointFrom(GAME_OUT_POINTS, -half, -side);
                 pointAnimationFrames.push(
-                    makeOutShot(NET_DURATION, 1-serverId, returnerPoint, shotPoint, outPoint));
+                    makeOutShot(OUT_DURATION, 1-serverId, returnerPoint, shotPoint, outPoint));
+                gPointHint += " отбил мяч в аут.";
+            }
+            
+            if (isBadFirstService) {
+                gPointHint += (" При этом " + playerNameFor(serverId) + " один раз ошибся на подаче.");
             }
         }
         
@@ -1268,6 +1343,8 @@
         }
         
         function generatePointWonFor(winnerId) {
+            hidePointHiht();
+            
             var serverId = getCurrentServerId();
             if (winnerId != serverId) {
                 if (Math.random() < 0.3) {
@@ -1283,6 +1360,35 @@
             }
         }
 
+        function viewPointHiht() {
+            var hint = "";
+            
+            if (!gScore.isFight()) {
+                if (gScore.isMatchWinner(0)) {
+                    hint = playerNameFor(0) + " выиграл матч! ";
+                } else if (gScore.isMatchWinner(1)) {
+                    hint = playerNameFor(1) + " выиграл матч! ";
+                }
+            }
+            
+            mPointHint.innerHTML = ("* " + hint +  gPointHint);
+        }
+        
+        function hidePointHiht() {
+            gPointHint = "";
+            
+            var hint = "_";
+            if (!gScore.isFight()) {
+                if (gScore.isMatchWinner(0)) {
+                    hint = playerNameFor(0) + " выиграл матч! ";
+                } else if (gScore.isMatchWinner(1)) {
+                    hint = playerNameFor(1) + " выиграл матч! ";
+                }
+            }
+            
+            mPointHint.innerHTML = hint;
+        }
+        
         function CScore(firstServerId) {
             this.SET_COUNT      = 5;
             this.TIEBREAK_SCORE = 6;
@@ -1518,7 +1624,7 @@
         CScore.prototype.isWinGames = function (g0,g1,setIndex) {
             return ((g0 == 6) && ((g0 - g1) >= 2) || 
                    ((setIndex <  4) && (g0 >  6) && ((g0 - g1) > 0)) ||
-                   ((setIndex >= 4) && (g0 >= 6) && ((g0 - g1) > 2)));
+                   ((setIndex >= 4) && (g0 >= 6) && ((g0 - g1) >= 2)));
         }
 
         CScore.prototype.isBeforeWinSet = function (g0,g1) {
@@ -1552,6 +1658,10 @@
         }
         
         function onWinButtonClick() {
+            if (!gScore.isFight()) {
+                return;
+            }
+            
             gPointFor = 0;
             generatePointWonFor(0);
             allButtonsDisabledTo(true);
@@ -1559,35 +1669,71 @@
         }
         
         function onLooseButtonClick() {
+            if (!gScore.isFight()) {
+                return;
+            }
+            
             gPointFor = 1;
             generatePointWonFor(1);
             allButtonsDisabledTo(true);
             startPointAnimation();
         }
 
+        function pointHihtAfterBifFight() {
+            gPointHint = "";
+            
+            var hint = "Было сыграно несколько розыгрышей!";
+            if (!gScore.isFight()) {
+                if (gScore.isMatchWinner(0)) {
+                    hint = "Шла упорная борьба, и " + playerNameFor(0) + " выиграл матч! ";
+                } else if (gScore.isMatchWinner(1)) {
+                    hint = "Шла упорная борьба, и " + playerNameFor(1) + " выиграл матч! ";
+                }
+            }
+            
+            mPointHint.innerHTML = hint;
+        }
+        
+        function viewAfterBigFight() {
+            viewScore();
+            pointHihtAfterBifFight();
+            if (gScore.isFight()) {
+                movePlayersToBench();
+            } else {
+                movePlayersToNet();
+            }
+        }
+        
         function onWinGameButtonClick() {
             gScore.winGameBy(0);
-            viewScore();
+
+            viewAfterBigFight();
         }
         
         function onLooseGameButtonClick() {
             gScore.winGameBy(1);
-            viewScore();
+
+            viewAfterBigFight();
         }
         
         function onWinSetButtonClick() {
             gScore.winSetBy(0);
-            viewScore();
+
+            viewAfterBigFight();
         }
         
         function onLooseSetButtonClick() {
             gScore.winSetBy(1);
-            viewScore();
+
+            viewAfterBigFight();
         }
         
         function onPlayAgain() {
             gScore = new CScore(0);
+
             viewScore();
+            hidePointHiht();
+            movePlayersToNet();
         }
        
         function allButtonsDisabledTo(value) {

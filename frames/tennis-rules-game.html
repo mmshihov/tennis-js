@@ -56,31 +56,41 @@
     </style>
 </head>
 <body>
-    <div id="mCourt" class="sCourt">
-        <div id="mField" class="sField"></div>
+    <table>
+        <tr><td>
+            <input type="button" value="Победить" onclick="onWinButtonClick(1)">
+        </td></tr>
+        <tr><td>
+            <div id="mCourt" class="sCourt">
+                <div id="mField" class="sField"></div>
 
-        <div id="mLineLeftOuter" class="sLine"></div>
-        <div id="mLineRightOuter" class="sLine"></div>
-        <div id="mLineLeftInner" class="sLine"></div>
-        <div id="mLineRightInner" class="sLine"></div>
-        <div id="mLineTopOuter" class="sLine"></div>
-        <div id="mLineBottomOuter" class="sLine"></div>
-        <div id="mLineTopInner" class="sLine"></div>
-        <div id="mLineBottomInner" class="sLine"></div>
-        <div id="mLineCentral" class="sLine"></div>
-        <div id="mLineTopMark" class="sLine"></div>
-        <div id="mLineBottomMark" class="sLine"></div>
-        
-        <div id="mNet" class="sNet"></div>
+                <div id="mLineLeftOuter" class="sLine"></div>
+                <div id="mLineRightOuter" class="sLine"></div>
+                <div id="mLineLeftInner" class="sLine"></div>
+                <div id="mLineRightInner" class="sLine"></div>
+                <div id="mLineTopOuter" class="sLine"></div>
+                <div id="mLineBottomOuter" class="sLine"></div>
+                <div id="mLineTopInner" class="sLine"></div>
+                <div id="mLineBottomInner" class="sLine"></div>
+                <div id="mLineCentral" class="sLine"></div>
+                <div id="mLineTopMark" class="sLine"></div>
+                <div id="mLineBottomMark" class="sLine"></div>
+                
+                <div id="mNet" class="sNet"></div>
 
-        <div id="mMyPlayer" class="sMyPlayer"></div>
-        <div id="mHisPlayer" class="sHisPlayer"></div>
-        
-        <div id="mBallShadow" class="sBallShadow"></div>
-        <div id="mBall" class="sBall"></div>
-        <div id="mFlash" class="sFlash"></div>
-    </div>
-    <input type="button" value="Победить" onclick="onWinButtonClick()">
+                <div id="mMyPlayer" class="sMyPlayer"></div>
+                <div id="mHisPlayer" class="sHisPlayer"></div>
+                
+                <div id="mBallShadow" class="sBallShadow"></div>
+                <div id="mBall" class="sBall"></div>
+                <div id="mFlash" class="sFlash"></div>
+            </div>
+        </td></tr>
+        <tr><td>
+            <input type="button" value="Победить" onclick="onWinButtonClick(0)">
+        </td></tr>
+    </table>
+    
     <script>
         var PAIR_FIELD_WIDTH     = 10.973; //metres
         var SINGLE_FIELD_WIDTH   = 8.23; 
@@ -1022,8 +1032,8 @@
             }
         }
         
-        function onWinButtonClick() {
-            generatePointWonFor(0);
+        function onWinButtonClick(player) {
+            generatePointWonFor(player);
             startPointAnimation();
         }
         
