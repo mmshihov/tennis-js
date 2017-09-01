@@ -1606,7 +1606,7 @@
         }
 
         CScore.prototype.isWinPoints = function (p0,p1) {
-            return (p0 >= 3) && ((p0 - p1) >= 2);
+            return (p0 > 3) && ((p0 - p1) >= 2);
         }
 
         CScore.prototype.isBeforeWinGame = function (p0,p1) {
