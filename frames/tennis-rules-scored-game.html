@@ -290,11 +290,15 @@
             <div style="clear:both"></div>
         </div>
         
-        <p>Попробуйте поиграть "виртуально":</p>
+        <p> 
+            Попробуйте поиграть "виртуально"
+            <br>(смену сторон не показываем):
+        </p>
+        
         
         <table class="sBigSb">
             <tr>
-                <td></td>
+                <td><div class="sBigSbHint">Пусть выиграет...</div></td>
                 <td><div class="sBigSbHint">SETS</div></td>
                 <td><div class="sBigSbHint">GAMES</div></td>
                 <td><div class="sBigSbHint">POINTS</div></td>
@@ -1397,6 +1401,7 @@
             this.currentSet    = 0;
             this.points        = [0,0];
             this.sets          = [[0,0],[0,0],[0,0],[0,0],[0,0]];
+            this.pointCounts   = [0,0,0,0,0];
         }
         
         CScore.prototype.winPointBy = function(player) {
@@ -1544,12 +1549,60 @@
                 if (this.isTiebreak()) {
                     switch ((this.points[0] + this.points[1]) % 4) {
                         case 0:
-                        case 1:  return 1;
+                        case 2:  return 1;
                         default: return -1;
                     }
                 } else {
                     return 1-2*((this.points[0] + this.points[1]) % 2);
                 }
+            }
+            return 0;
+        }
+
+        function checkSideInSet(side, gameCount) {
+            if ((Math.floor(gameCount/2) % 2) == 1) {
+                side *= -1;
+            }
+            
+            if ((Math.floor(gameCount) % 2) == 1) {
+                side *= -1;
+            }
+            
+            return side;
+        }
+        
+        function checkSideInTiebreak(side, pointCount) {
+            if ((Math.floor(pointCount/6) % 2) == 1) {
+                side *= -1;
+            }
+            
+            return side;
+        }
+        
+        CScore.prototype.side = function () {
+            if (this.isFight()) {
+                var side = 1;
+                var i = 0;
+                for (; i<this.currentSet; i++) {
+                    var gameCount = this.sets[i][0] + this.sets[i][1];
+                    if (gameCount <= 2*this.TIEBREAK_SCORE) {
+                        side = checkSideInSet(side, gameCount);
+                    } else { //it was tiebreak...
+                        side = checkSideInSet(side, gameCount - 1);
+                        side = checkSideInTiebreak(side, this.pointCounts[i]);
+                        side *= -1; //change side after tiebreak
+                    }
+                }
+                
+                var gameCount = this.sets[i][0] + this.sets[i][1];
+                if (gameCount <= 2*this.TIEBREAK_SCORE) {
+                    side = checkSideInSet(side, gameCount);
+                } else { //it was tiebreak...
+                    side = checkSideInSet(side, gameCount - 1);
+                    side = checkSideInTiebreak(side, this.point[0] + this.point[1]);
+                }
+                
+                return side;
             }
             return 0;
         }
@@ -1562,19 +1615,23 @@
             if (this.isTiebreak()) {
                 if (this.isTiebreakWinPoints(this.points[0], this.points[1])) {
                     this.sets[this.currentSet][0] += 1;
+                    this.pointCounts[this.currentSet] = (this.points[0] + this.points[1]);
                     this.points = [0,0];
                     this.currentSet += 1;
                 } else if (this.isTiebreakWinPoints(this.points[1], this.points[0])) {
                     this.sets[this.currentSet][1] += 1;
+                    this.pointCounts[this.currentSet] = (this.points[0] + this.points[1]);
                     this.points = [0,0];
                     this.currentSet += 1;
                 }
             } else {
                 if (this.isWinPoints(this.points[0], this.points[1])) {
                     this.sets[this.currentSet][0] += 1;
+                    this.pointCounts[this.currentSet] = (this.points[0] + this.points[1]);
                     this.points = [0,0];
                 } else if (this.isWinPoints(this.points[1], this.points[0])) {
                     this.sets[this.currentSet][1] += 1;
+                    this.pointCounts[this.currentSet] = (this.points[0] + this.points[1]);
                     this.points = [0,0];
                 }
             
